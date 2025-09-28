@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import defaultimage from "@assets/images/character/character-gom.svg";
 import type { Room } from "@/pages/chat/services/chat";
 import { getRooms, isMentiUser } from "@/pages/chat/services/chat";
+import defaultimage from "@assets/images/character/character-gom.svg";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 function groupBy<T extends Record<string, any>, K extends keyof T>(
   arr: T[],
@@ -70,7 +70,7 @@ export default function ChatListPage() {
 
   return (
     <div className="l flex min-h-screen w-full justify-center overflow-x-hidden bg-[#f5f6f8] antialiased">
-      <section className="w-full overflow-x-hidden bg-white px-4 py-5">
+      <section className="w-full overflow-x-hidden bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1] px-4 py-5">
         <h1 className="font-WooridaumB mt-6 mb-15 pl-2 text-[20px]">멘티 채팅</h1>
 
         {rooms === null && !error && (

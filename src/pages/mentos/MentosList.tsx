@@ -89,10 +89,10 @@ export default function MentosList() {
 
   return (
     // 페이지 배경: 아주 미세한 그라데이션
-    <div className="min-h-screen bg-[linear-gradient(180deg,#F8FAFF_0%,#FFFFFF_60%,#F7FAFF_100%)] font-sans antialiased">
+    <div className="to-[#c2d2f1]font-sans min-h-screen bg-gradient-to-b from-[#F7FAFF] antialiased">
       <div className="mx-auto min-h-screen max-w-md">
         {/* 타이틀 */}
-        <div ref={headerRef} className="px-6 pt-4 pb-2">
+        <div ref={headerRef} className="px-6 pb-2">
           <MentosMainTitleComponent mainTitle={mainTitle} />
         </div>
 

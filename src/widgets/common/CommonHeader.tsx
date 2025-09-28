@@ -1,4 +1,4 @@
-// src/components/CommonHeader.tsx
+import { LoginSheet } from "@/widgets/home2/LoginSheet";
 import backIcon from "@assets/icons/icon-back.png";
 import loginIcon from "@assets/icons/icon-login.svg";
 import homeIcon from "@assets/icons/icon-move-home.svg";
@@ -7,29 +7,65 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface CommonHeaderProps {
-  onClickLogin?: () => void;
   onClickHome?: () => void;
 }
 
 export default function CommonHeader({ onClickHome }: CommonHeaderProps) {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, login, logout } = useAuth();
+
+  // ✅ 바텀시트 로그인 모달 상태
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   // ✅ 로그아웃 모달 상태
   const [isLogoutOpen, setLogoutOpen] = useState(false);
 
   const goBack = () => navigate(-1);
 
+  // 로그인 버튼 클릭
   const goLogin = async () => {
     if (user) {
+      // 이미 로그인 → 로그아웃 진행
       await logout();
-      setLogoutOpen(true); // 모달 오픈
+      setLogoutOpen(true);
     } else {
-      navigate("/login");
+      // 로그인 안됨 → **현재 화면에서** 바텀시트로 띄우기
+      setLoginError(null);
+      setShowLoginForm(true);
     }
   };
 
   const goHome = () => (onClickHome ? onClickHome() : navigate("/"));
+
+  // ✅ 바텀시트에서 로그인 처리
+  const handleLoginSubmit = async ({
+    id,
+    pw,
+    role,
+  }: {
+    id: string;
+    pw: string;
+    role: "mentee" | "mentor";
+  }) => {
+    setIsLoggingIn(true);
+    setLoginError(null);
+    try {
+      const userType = role === "mentor" ? "MENTO" : "MENTI";
+      await login({ userType, memberId: id, memberPwd: pw });
+      setShowLoginForm(false);
+      // 로그인 후에는 그대로 현재 페이지 유지 (요구사항에 맞춤)
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "로그인에 실패했습니다. 아이디/비밀번호를 확인해주세요.";
+      setLoginError(msg);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between bg-white px-4 py-3 sm:px-6 lg:px-8">
@@ -41,6 +77,7 @@ export default function CommonHeader({ onClickHome }: CommonHeaderProps) {
           className="mx-0 h-6 w-auto cursor-pointer hover:brightness-60"
         />
       </button>
+
       {/* 오른쪽 아이콘들 */}
       <div className="flex items-center gap-4">
         <button type="button" onClick={goLogin} aria-label="login">
@@ -58,6 +95,7 @@ export default function CommonHeader({ onClickHome }: CommonHeaderProps) {
           />
         </button>
       </div>
+
       {/* ✅ 로그아웃 완료 모달 */}
       {isLogoutOpen && (
         <div
@@ -69,7 +107,7 @@ export default function CommonHeader({ onClickHome }: CommonHeaderProps) {
             className="absolute inset-0 bg-black/40"
             onClick={() => {
               setLogoutOpen(false);
-              navigate("/login"); // 모달 닫을 때 로그인 페이지로 이동
+              navigate("/"); // 모달 닫을 때 메인으로
             }}
           />
           {/* content */}
@@ -82,7 +120,7 @@ export default function CommonHeader({ onClickHome }: CommonHeaderProps) {
                 className="rounded-lg bg-[#005EF9] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0C2D62]"
                 onClick={() => {
                   setLogoutOpen(false);
-                  navigate("/login");
+                  navigate("/");
                 }}>
                 확인
               </button>
@@ -90,6 +128,16 @@ export default function CommonHeader({ onClickHome }: CommonHeaderProps) {
           </div>
         </div>
       )}
+
+      {/* ✅ 이 헤더가 포함된 “현재 페이지 뷰포트” 기준으로 밑에서 올라오는 로그인 시트 */}
+      <LoginSheet
+        open={showLoginForm && !user}
+        onClose={() => setShowLoginForm(false)}
+        onSubmit={handleLoginSubmit}
+        error={loginError}
+        loading={isLoggingIn}
+        placement="fixed" // ← 중요! 화면 하단에서 올라오게
+      />
     </header>
   );
 }

@@ -1,4 +1,5 @@
 // src/app/routes/index.tsx
+import RecommendChatPage from "@/pages/chat/RecommendChatPage";
 import DelayedFallback from "@/shared/ui/DelayedFallBack";
 import LoadingBar from "@/shared/ui/LoadingBar";
 import React, { Suspense } from "react";
@@ -14,7 +15,7 @@ const Error404 = React.lazy(() => import("@/pages/home/Error404"));
 const Error500 = React.lazy(() => import("@/pages/home/Error500"));
 
 // [ Home ]
-const Home = React.lazy(() => import("@/pages/home/Home"));
+const Home = React.lazy(() => import("@/pages/home/Home2"));
 
 // [ auth ]
 const Login = React.lazy(() => import("@/pages/login/Login"));
@@ -86,6 +87,7 @@ export const router = createBrowserRouter([
         element: withSuspense(<AppLayout />),
         children: [
           // ----- (1) 공개 라우트 -----
+          { path: "/recommend", element: withSuspense(<RecommendChatPage />) },
           { path: "/login", element: withSuspense(<Login />) },
           { path: "/signup", element: withSuspense(<SignupSelect />) },
           { path: "/signup/mentor", element: withSuspense(<MentorSignup />) },

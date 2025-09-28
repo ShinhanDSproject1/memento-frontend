@@ -188,7 +188,7 @@ export default function MyProfile() {
   /* ── view ───────────────────────────── */
   return (
     <div className="font-WooridaumB flex min-h-screen justify-center bg-[#f5f6f8] antialiased">
-      <main className="min-h-dvh w-full bg-white px-4 py-8 shadow">
+      <main className="min-h-dvh w-full bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1] px-4 py-8 shadow">
         <PageContainer>
           {/* 내 프로필 */}
           <h2 className={headingCls}>내 프로필</h2>
