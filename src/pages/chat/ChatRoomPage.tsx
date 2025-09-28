@@ -204,34 +204,46 @@ export default function ChatRoomPage() {
   // JSX 렌더링 ---
   return (
     <div className="flex h-dvh w-full flex-col overscroll-none rounded-[18px] bg-white">
-      <div className="sticky top-0 z-10 flex h-12 shrink-0 items-center border-b border-[#f1f3f6] bg-white px-4 pt-[env(safe-area-inset-top)]">
-        <div className="text-[18px] font-bold text-[#4B4E51]">
-          {room ? `${room.name} · ${room.group}` : "채팅"}
-        </div>
+      <div className="sticky top-0 z-10 flex items-center border-b border-[#f1f3f6] bg-white px-4 py-4 pt-[env(safe-area-inset-top)]">
+        <div className="text-[18px] font-bold text-[#4B4E51]">{room ? room.name : "채팅"} </div>
       </div>
 
       <div
         ref={scrollRef}
         className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[#E6EDFF]/[0.22] px-4 py-5">
-        {msgs.map((m) => (
-          <div
-            key={m.id}
-            className={`flex w-full items-end gap-2 ${m.role === "me" ? "justify-end" : "justify-start"}`}>
-            {m.role !== "me" && (
-              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#565C63]">
-                <img
-                  src={m.profileImageUrl || defaultimage}
-                  alt="profile"
-                  className="h-full w-full rounded-full object-cover"
-                />
+        {msgs.map((m, i) => {
+          const prev = msgs[i - 1];
+          const isOther = m.role !== "me";
+          const showName = isOther && (!prev || prev.role === "me");
+          return (
+            <div key={m.id} className="w-full">
+              {showName && (
+                <div className="font-WooridaumL mb-1 ml-12 text-[11.5px] font-medium text-[#333]">
+                  {room?.group ?? "상대"}
+                </div>
+              )}
+
+              <div
+                className={`flex w-full items-end gap-2 ${m.role === "me" ? "justify-end" : "justify-start"}`}>
+                {isOther && (
+                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#565C63]">
+                    <img
+                      src={m.profileImageUrl || defaultimage}
+                      alt="profile"
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[78%] rounded-[18px] px-4 py-2 break-words whitespace-pre-wrap text-white ${
+                    m.role === "me" ? "bg-[#2563eb]" : "bg-[#93B1FF]"
+                  }`}>
+                  {m.text}
+                </div>
               </div>
-            )}
-            <div
-              className={`max-w-[78%] rounded-[18px] px-4 py-2 break-words whitespace-pre-wrap text-white ${m.role === "me" ? "bg-[#2563eb]" : "bg-[#93B1FF]"}`}>
-              {m.text}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <form
