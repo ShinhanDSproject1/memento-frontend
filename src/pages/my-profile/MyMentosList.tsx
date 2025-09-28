@@ -15,13 +15,12 @@ import { useModal } from "@hooks/ui/useModal";
 import type { ModalKey } from "@shared/ui/ModalConfig";
 import { useQueryClient } from "@tanstack/react-query";
 import { CommonModal } from "@widgets/common";
-import { useEffect, useMemo, useRef, type FC } from "react";
+import { useEffect, useMemo, useRef, useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
 
-// ----- Types -----
+/* -------------------------------- Types -------------------------------- */
 type Role = "mento" | "menti";
 
-// useModal 반환 타입(설정 키 재사용)
 type UseModalReturn = {
   isOpen: boolean;
   modalType?: ModalKey;
@@ -34,15 +33,16 @@ interface MyMentosListProps {
   role: Role;
 }
 
-// ─────────────────────────────────────────────────────────────
-// helpers
-// ─────────────────────────────────────────────────────────────
+/* ------------------------------ Constants ------------------------------ */
 const MY_MENTOS_QK = ["my-mentos-list"] as const;
+const GAP_PX = 24; // 카드 간격 gap-6
+const PAGE_PADDING_BOTTOM = 24; // pb-6
 
+/* -------------------------------- Utils -------------------------------- */
 const fmtDateTime = (ymd?: string, time?: string) => {
   if (!ymd) return "";
   const [y, m, d] = ymd.split("-").map(Number);
-  if (!y || !m || !d) return ymd; // 방어
+  if (!y || !m || !d) return ymd;
   const weekday = ["일", "월", "화", "수", "목", "금", "토"][new Date(y, m - 1, d).getDay()];
   return `${m}.${d}(${weekday})${time ? ` ${time}` : ""}`;
 };
@@ -63,7 +63,7 @@ function getPaymentSeq(it: any): number | undefined {
   );
 }
 
-/** 리뷰 완료를 캐시에 즉시 반영 (infinite query 가정: {pages:[{result:{content:[]}}]} ) */
+/** 리뷰 완료 캐시 반영 */
 function markReviewedInCache(
   queryClient: ReturnType<typeof useQueryClient>,
   reservationSeq?: number,
@@ -71,8 +71,7 @@ function markReviewedInCache(
   if (!reservationSeq) return;
   queryClient.setQueryData<any>(MY_MENTOS_QK, (old) => {
     if (!old) return old;
-    // react-query infinite 형태: { pages, pageParams }
-    const next = {
+    return {
       ...old,
       pages: old.pages?.map((pg: any) => {
         if (!pg?.result?.content) return pg;
@@ -82,11 +81,10 @@ function markReviewedInCache(
         return { ...pg, result: { ...pg.result, content: newContent } };
       }),
     };
-    return next;
   });
 }
 
-/** 신고 완료를 캐시에 즉시 반영 */
+/** 신고 완료 캐시 반영 */
 function markReportedInCache(queryClient: ReturnType<typeof useQueryClient>, mentosSeq?: number) {
   if (!mentosSeq) return;
   queryClient.setQueryData<any>(MY_MENTOS_QK, (old) => {
@@ -104,7 +102,7 @@ function markReportedInCache(queryClient: ReturnType<typeof useQueryClient>, men
   });
 }
 
-/** 빈 응답(컨텐츠 없음) 판별: 멘토/멘티 구조 모두 커버 */
+/** 빈 응답(컨텐츠 없음) 판별 */
 const isEmptyPages = (data: any) => {
   if (!data?.pages || !Array.isArray(data.pages)) return false;
   return data.pages.every((pg: any) => {
@@ -113,39 +111,59 @@ const isEmptyPages = (data: any) => {
     return Array.isArray(content) ? content.length === 0 : true;
   });
 };
-
-/** 에러를 '컨텐츠 없음'으로 간주할 상태(선택) */
 const isNoContentError = (err: any) => {
   const s = err?.response?.status;
   return s === 204 || s === 404;
 };
 
 interface ReviewModalData {
-  mentosSeq?: number; // 사용 안 해도 남겨둠(타입 호환)
+  mentosSeq?: number;
   initialRating?: number;
   initialContent?: string;
-  reservationSeq?: number; // 실제 사용 필드
+  reservationSeq?: number;
   onRatingChange?: (r: number) => void;
   onContentChange?: (t: string) => void;
 }
-
 interface ReportModalData {
   mentosSeq?: number;
   reportType?: ReportType;
   imageFile?: File | null;
-  idemKey?: string; // 신고는 멱등키 사용
+  idemKey?: string;
 }
 
+/* ============================== Component ============================== */
 const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
-  // 리뷰 임시 입력 저장소 (모달 내부 입력 콜백으로 채움)
-  const reviewDraftRef = useRef<{ rating: number; content: string }>({ rating: 0, content: "" });
+  // 공통 레이아웃: 2장 고정 높이 계산
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
+  const [listH, setListH] = useState(0);
+  const [cardH, setCardH] = useState(0);
 
+  useEffect(() => {
+    const calcHeights = () => {
+      const titleBottom =
+        headerRef.current?.getBoundingClientRect().bottom ??
+        scrollRef.current?.getBoundingClientRect().top ??
+        0;
+      const viewportH = window.innerHeight;
+      const available = Math.max(0, viewportH - titleBottom - PAGE_PADDING_BOTTOM);
+      setListH(available);
+      setCardH(Math.floor((available - GAP_PX) / 2)); // gap 한 번 빼고 2장 분배
+    };
+    calcHeights();
+    window.addEventListener("resize", calcHeights);
+    return () => window.removeEventListener("resize", calcHeights);
+  }, []);
+
+  // 모달/네비게이션
+  const reviewDraftRef = useRef<{ rating: number; content: string }>({ rating: 0, content: "" });
   const { isOpen, modalType, openModal, closeModal, modalData } = useModal() as UseModalReturn;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  /** 공통 확인 핸들러 */
+  /** 확인/취소/제출 핸들러 (기존 로직 유지) */
   const handleConfirmAction = async () => {
-    // 환불
     if (modalType === "refundMentos") {
       const { reservationSeq } = (modalData ?? {}) as { reservationSeq?: number };
       if (!reservationSeq) {
@@ -154,11 +172,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
         });
         return closeModal();
       }
-
-      openModal("loading", {
-        title: "환불 처리 중입니다…",
-        description: "잠시만 기다려주세요 ⏳",
-      });
+      openModal("loading", { title: "환불 처리 중입니다…", description: "잠시만 기다려주세요 ⏳" });
       try {
         const res = await refundPayment(reservationSeq);
         closeModal();
@@ -181,11 +195,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
     if (modalType === "deleteMentos") {
       const { mentosSeq } = (modalData ?? {}) as { mentosSeq?: number };
       if (!mentosSeq) return closeModal();
-      openModal("loading", {
-        title: "삭제 중입니다…",
-        description: "잠시만 기다려주세요 ⏳",
-      });
-
+      openModal("loading", { title: "삭제 중입니다…", description: "잠시만 기다려주세요 ⏳" });
       try {
         const res = await deleteMentoMentos(mentosSeq);
         closeModal();
@@ -209,41 +219,28 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
     }
     closeModal();
   };
-
   const handleCancelAction = () => closeModal();
 
-  /** 제출 핸들러 (form 모달의 '등록'/'신고' 버튼) */
   const handleSubmit = async () => {
-    // --- 리뷰 작성 ---
     if (modalType === "reviewMentos") {
       const { reservationSeq } = (modalData ?? {}) as ReviewModalData;
       const { rating, content } = reviewDraftRef.current;
-
-      if (!reservationSeq) {
-        openModal("needReviewContent", { message: "예약 정보가 없습니다." });
-        return;
-      }
-      if (!rating || !content.trim()) {
-        openModal("needReviewContent", { message: "별점과 내용을 입력하세요." });
-        return;
-      }
+      if (!reservationSeq)
+        return openModal("needReviewContent", { message: "예약 정보가 없습니다." });
+      if (!rating || !content.trim())
+        return openModal("needReviewContent", { message: "별점과 내용을 입력하세요." });
 
       openModal("loading", { title: "리뷰 작성 중…", description: "잠시만 기다려주세요 ⏳" });
-
       try {
         const res = await createReview({
           reservationSeq,
           reviewRating: rating,
           reviewContent: content,
         });
-        closeModal(); // loading 닫기
-
+        closeModal();
         if (res.code === 1000) {
-          // 1) 캐시 즉시 반영
           markReviewedInCache(queryClient, reservationSeq);
-          // 2) 완료 모달
           openModal("reviewComplete");
-          // 3) 서버 최신 동기화
           await queryClient.invalidateQueries({ queryKey: MY_MENTOS_QK });
           await mentee.refetch?.();
         } else {
@@ -256,13 +253,10 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
       return;
     }
 
-    // --- 신고 작성 ---
     if (modalType === "reportMentos") {
       const { mentosSeq, reportType, imageFile, idemKey } = (modalData ?? {}) as ReportModalData;
-      if (!mentosSeq || !reportType || !idemKey) {
-        openModal("withdrawFailed", { message: "신고 정보가 올바르지 않습니다." });
-        return;
-      }
+      if (!mentosSeq || !reportType || !idemKey)
+        return openModal("withdrawFailed", { message: "신고 정보가 올바르지 않습니다." });
       try {
         openModal("loading", { title: "신고 접수 중…", description: "잠시만 기다려주세요 ⏳" });
         await createReport({
@@ -281,7 +275,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
     }
   };
 
-  // 아이템별 액션
+  // 버튼 액션
   const onReviewClick = (reservationSeq?: number, alreadyCompleted?: boolean) => {
     if (alreadyCompleted) {
       openModal("withdrawFailed", { message: "이미 리뷰를 작성한 항목입니다." });
@@ -292,26 +286,19 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
       reservationSeq,
       initialRating: 3,
       initialContent: "",
-      onRatingChange: (r: number) => {
-        reviewDraftRef.current.rating = r;
-      },
-      onContentChange: (t: string) => {
-        reviewDraftRef.current.content = t;
-      },
+      onRatingChange: (r: number) => (reviewDraftRef.current.rating = r),
+      onContentChange: (t: string) => (reviewDraftRef.current.content = t),
     });
   };
-
   const onDeleteClick = (mentosSeq: number) => openModal("deleteMentos", { mentosSeq });
-
   const onUpdateClick = (mentosSeq: number) => navigate(`/edit/${mentosSeq}`);
-
   const onReportClick = (mentosSeq: number) =>
     openModal("reportMentos", { title: "신고하기", mentosSeq, idemKey: crypto.randomUUID() });
   const onRefundClick = (reservationSeq: number) => openModal("refundMentos", { reservationSeq });
 
+  /* ------------------------------ Data hooks ------------------------------ */
   // 멘티
   const mentee = useMyMentosInfiniteList(5, { enabled: role === "menti" });
-  const queryClient = useQueryClient();
   const menteeList = useMemo(() => {
     const seen = new Set<number>();
     return (mentee.data?.pages ?? [])
@@ -323,8 +310,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
       });
   }, [mentee.data]);
 
-  // 기존 빈 플래그 + '컨텐츠 없음' 에러 보정
-  const menteeEmpty = !mentee.isLoading && !mentee.isError && menteeList.length === 0;
+  const menteeEmpty = !mentee.isLoading && menteeList.length === 0;
   const menteeNoContent =
     (!mentee.isLoading && isEmptyPages(mentee.data)) ||
     (mentee.isError && isNoContentError(mentee.error));
@@ -346,27 +332,23 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
       });
   }, [mentor.data]);
 
-  const mentorEmpty = !mentor.isLoading && !mentor.isError && mentorList.length === 0;
+  const mentorEmpty = !mentor.isLoading && mentorList.length === 0;
   const mentorNoContent =
     (!mentor.isLoading && isEmptyPages(mentor.data)) ||
     (mentor.isError && isNoContentError(mentor.error));
 
-  const loaderRef = useRef<HTMLDivElement | null>(null);
-
-  // 무한 스크롤 옵저버
+  // 무한 스크롤: 스냅 컨테이너 기준
   useEffect(() => {
     const hasNext = role === "mento" ? mentor.hasNextPage : mentee.hasNextPage;
     const fetching = role === "mento" ? mentor.isFetchingNextPage : mentee.isFetchingNextPage;
     const loadMore = role === "mento" ? mentor.fetchNextPage : mentee.fetchNextPage;
 
-    if (!loaderRef.current || !hasNext) return;
+    if (!loaderRef.current || !scrollRef.current || !hasNext) return;
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting) && hasNext && !fetching) {
-          loadMore();
-        }
+        if (entries.some((e) => e.isIntersecting) && hasNext && !fetching) loadMore();
       },
-      { rootMargin: "200px" },
+      { root: scrollRef.current, rootMargin: "200px 0px" },
     );
     io.observe(loaderRef.current);
     return () => io.disconnect();
@@ -380,155 +362,117 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
     mentee.fetchNextPage,
   ]);
 
-  /* -------------------------------- 멘토 뷰 -------------------------------- */
-  if (role === "mento") {
-    console.log("멘티 첫 아이템 원본:", mentee.data?.pages?.[0]?.result?.content?.[0]);
-    console.log("멘티 가공 리스트 첫 아이템:", menteeList?.[0]);
-    return (
-      <div className="flex min-h-screen w-full justify-center bg-[#f5f6f8] antialiased">
-        <section className="w-full bg-white px-4 py-5 shadow">
-          <div className="mt-6 mb-15 flex w-full items-baseline justify-between">
-            <h1 className="font-WooridaumB pl-2 text-[20px] font-bold">멘토링 관리</h1>
-            <Button
-              variant="primary"
-              size="sm"
-              className="!h-[32px] !rounded-[8px] !px-3 !text-[13px]"
-              onClick={() => navigate("/create-mentos")}>
-              멘토링 생성하기
-            </Button>
+  /* ============================== Renders ============================== */
+  const pageTitle = role === "mento" ? "멘토링 관리" : "나의 멘토링 내역";
+
+  return (
+    <div className="min-h-screen bg-[linear-gradient(180deg,#F8FAFF_0%,#FFFFFF_60%,#F7FAFF_100%)] font-sans antialiased">
+      <div className="mx-auto min-h-screen max-w-md">
+        {/* Title */}
+        <div ref={headerRef} className="px-6 pt-4 pb-2">
+          <div className="flex items-baseline justify-between">
+            <MentosMainTitleComponent mainTitle={pageTitle} />
+            {role === "mento" && (
+              <Button
+                variant="primary"
+                size="sm"
+                className="!h-[32px] !rounded-[8px] !px-3 !text-[13px]"
+                onClick={() => navigate("/create-mentos")}>
+                멘토링 생성하기
+              </Button>
+            )}
           </div>
+        </div>
 
-          {mentor.isLoading && <div className="py-6 text-center text-sm">불러오는 중…</div>}
-
-          {(mentorEmpty || mentorNoContent) && (
-            <div className="py-10 text-center text-sm text-gray-500">
-              멘토가 작성한 멘토링 내역이 존재하지 않습니다.
+        {/* Scroll area: 2-card snap */}
+        <div
+          ref={scrollRef}
+          className="snap-y snap-mandatory overflow-y-auto px-4 pb-6"
+          style={listH ? { height: `${listH}px` } : undefined}>
+          {/* Loading / Error / Empty */}
+          {(role === "mento" ? mentor.isLoading : mentee.isLoading) && (
+            <div className="flex items-center justify-center py-16 text-sm text-slate-600">
+              불러오는 중…
             </div>
           )}
 
-          {!mentorEmpty && !mentorNoContent && mentor.isError && (
-            <div className="py-6 text-center text-sm text-red-500">
-              데이터를 불러오지 못했습니다.
-              <button
-                onClick={() => mentor.refetch()}
-                className="ml-2 rounded bg-blue-500 px-2 py-1 text-white">
-                다시 시도
-              </button>
+          {(role === "mento" ? mentorEmpty || mentorNoContent : menteeEmpty || menteeNoContent) && (
+            <div className="py-20 text-center text-sm text-slate-500">
+              {role === "mento"
+                ? "멘토가 작성한 멘토링 내역이 존재하지 않습니다."
+                : "멘토링 내역이 없습니다."}
             </div>
           )}
 
-          {!mentorEmpty && !mentorNoContent && !mentor.isError && (
-            <>
-              <section className="flex w-full flex-col items-center gap-4">
-                {mentorList.map((item) => (
+          {/* List */}
+          <section className="flex flex-col gap-6 pt-4">
+            {role === "mento"
+              ? mentorList.map((item) => (
                   <MentosCard
                     key={item.mentosSeq}
                     mentosSeq={item.mentosSeq}
                     title={item.mentosTitle}
                     price={item.price}
                     location={item.region}
-                    status="mento"
+                    status="pending"
                     imageUrl={item.mentosImage}
+                    reportDisabled={!!item.reportCompleted}
                     onUpdateClick={() => onUpdateClick(item.mentosSeq)}
                     onDeleteClick={() => onDeleteClick(item.mentosSeq)}
+                    fixedHeight={cardH}
                   />
-                ))}
-              </section>
+                ))
+              : menteeList.map((item: MyMentosItem) => {
+                  const dateLabel = fmtDateTime(item.mentosAt, item.mentosTime);
+                  const locationLabel = dateLabel
+                    ? `${dateLabel}${item.region ? ` · ${item.region}` : ""}`
+                    : item.region;
 
-              {mentor.hasNextPage && <div ref={loaderRef} className="h-10 w-full" />}
-              {mentor.isFetchingNextPage && (
-                <div className="py-4 text-center text-sm text-gray-500">더 불러오는 중…</div>
-              )}
-              {!mentor.hasNextPage && mentorList.length > 0 && (
-                <div className="py-6 text-center text-xs text-gray-400">마지막 페이지입니다.</div>
-              )}
-            </>
+                  // 진행 상태(간단 추정): 리뷰 가능이면 completed, 아니면 pending
+                  const status = item.reviewCompleted ? "completed" : "pending";
+
+                  return (
+                    <MentosCard
+                      key={item.mentosSeq}
+                      mentosSeq={item.mentosSeq}
+                      title={item.mentosTitle}
+                      price={item.price}
+                      location={locationLabel}
+                      imageUrl={item.mentosImage}
+                      status={status as any}
+                      onReviewClick={() => onReviewClick(item.reservationSeq, item.reviewCompleted)}
+                      onRefundClick={() =>
+                        item.reservationSeq
+                          ? onRefundClick(item.reservationSeq)
+                          : openModal("withdrawFailed", {
+                              message: "해당 항목에는 예약 내역이 없습니다.",
+                            })
+                      }
+                      onReportClick={() =>
+                        item.reportCompleted
+                          ? openModal("withdrawFailed", { message: "이미 신고한 항목입니다." })
+                          : onReportClick(item.mentosSeq)
+                      }
+                      refundDisabled={!item.reservationSeq}
+                      reviewDisabled={item.reviewCompleted}
+                      reportDisabled={!!item.reportCompleted}
+                      fixedHeight={cardH}
+                    />
+                  );
+                })}
+          </section>
+
+          {/* Infinite loader */}
+          {(role === "mento" ? mentor.hasNextPage : mentee.hasNextPage) && (
+            <div ref={loaderRef} className="mt-6 h-4 w-full" />
           )}
-
-          {isOpen && modalType ? (
-            <CommonModal
-              type={modalType}
-              onConfirm={handleConfirmAction}
-              onCancel={handleCancelAction}
-              isOpen={isOpen}
-              onSubmit={handleSubmit}
-              modalData={modalData}
-            />
-          ) : null}
-        </section>
-      </div>
-    );
-  }
-
-  /* -------------------------------- 멘티 뷰 -------------------------------- */
-  return (
-    <div className="no-scrollbar flex min-h-screen w-full flex-col gap-4 overflow-y-auto bg-white pb-4">
-      <MentosMainTitleComponent mainTitle={"나의 멘토링 내역"} />
-
-      {mentee.isLoading && <div className="py-6 text-center text-sm">불러오는 중…</div>}
-
-      {(menteeEmpty || menteeNoContent) && (
-        <div className="py-10 text-center text-sm text-gray-500">멘토링 내역이 없습니다.</div>
-      )}
-
-      {!menteeEmpty && !menteeNoContent && mentee.isError && (
-        <div className="py-6 text-center text-sm text-red-500">
-          데이터를 불러오지 못했습니다.
-          <button
-            onClick={() => mentee.refetch()}
-            className="ml-2 rounded bg-blue-500 px-2 py-1 text-white">
-            다시 시도
-          </button>
+          {(role === "mento" ? mentor.isFetchingNextPage : mentee.isFetchingNextPage) && (
+            <div className="flex justify-center py-8 text-sm text-slate-500">더 불러오는 중…</div>
+          )}
         </div>
-      )}
+      </div>
 
-      {!menteeEmpty && !menteeNoContent && !mentee.isError && (
-        <section className="flex w-full flex-col items-center gap-3">
-          {menteeList.map((item: MyMentosItem) => {
-            const dateLabel = fmtDateTime(item.mentosAt, item.mentosTime);
-            const locationLabel = dateLabel
-              ? `${dateLabel}${item.region ? ` · ${item.region}` : ""}`
-              : item.region;
-            return (
-              <MentosCard
-                key={item.mentosSeq}
-                mentosSeq={item.mentosSeq}
-                title={item.mentosTitle}
-                price={item.price}
-                location={locationLabel}
-                status={item.progressStatus === "진행 완료" ? "completed" : "pending"}
-                imageUrl={item.mentosImage}
-                onReviewClick={() => onReviewClick(item.reservationSeq, item.reviewCompleted)}
-                onRefundClick={() =>
-                  item.reservationSeq
-                    ? onRefundClick(item.reservationSeq)
-                    : openModal("withdrawFailed", {
-                        message: "해당 항목에는 예약 내역이 없습니다.",
-                      })
-                }
-                onReportClick={() =>
-                  item.reportCompleted
-                    ? openModal("withdrawFailed", { message: "이미 신고한 항목입니다." })
-                    : onReportClick(item.mentosSeq)
-                }
-                // 버튼 비활성화
-                refundDisabled={!item.reservationSeq}
-                reviewDisabled={item.reviewCompleted}
-                reportDisabled={!!item.reportCompleted}
-              />
-            );
-          })}
-
-          {mentee.hasNextPage && <div ref={loaderRef} className="h-10 w-full" />}
-          {mentee.isFetchingNextPage && (
-            <div className="py-4 text-center text-sm text-gray-500">더 불러오는 중…</div>
-          )}
-          {!mentee.hasNextPage && menteeList.length > 0 && (
-            <div className="py-6 text-center text-xs text-gray-400">마지막 페이지입니다.</div>
-          )}
-        </section>
-      )}
-
+      {/* Modal */}
       {isOpen && modalType ? (
         <CommonModal
           type={modalType}
