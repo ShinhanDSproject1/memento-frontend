@@ -1,16 +1,11 @@
 // src/shared/api/http.ts
 import { clearAccessToken, getAccessToken, setAccessToken } from "@/shared/auth/token";
 import axios, {
-  // AxiosError,
   AxiosHeaders,
-  // type AxiosRequestConfig,
   type AxiosRequestHeaders,
   type InternalAxiosRequestConfig,
 } from "axios";
 
-const DEBUG_HTTP = true;
-
-// 환경변수 기반으로 baseURL 결정 (dev: "/api" 프록시, prod: 절대 URL)
 const RAW_BASE = (import.meta as any).env?.VITE_API_BASE_URL;
 export const BASE_URL = typeof RAW_BASE === "string" && RAW_BASE.length > 0 ? RAW_BASE : "/api";
 
@@ -41,54 +36,6 @@ function setAuthHeader(c: AppRequestConfig, token: string) {
   c._hadAuth = true;
 }
 
-/* ------------------------ 디버그 로깅 (단 1회 등록) ------------------------ */
-if (DEBUG_HTTP) {
-  interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
-    _hadAuth?: boolean;
-    _skipAuth?: boolean;
-  }
-
-  http.interceptors.request.use((config: CustomAxiosRequestConfig) => {
-    const auth =
-      config.headers instanceof AxiosHeaders
-        ? config.headers.get("Authorization")
-        : (config.headers?.["Authorization"] as string | undefined);
-
-    console.log(
-      `%c[HTTP:REQ] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`,
-      "color:#4F46E5;font-weight:bold;",
-      {
-        params: config.params,
-        data: config.data,
-        hadAuth: config._hadAuth,
-        authHeader: auth,
-        skipAuth: config._skipAuth,
-      },
-    );
-    return config;
-  });
-
-  http.interceptors.response.use(
-    (res) => {
-      console.log(
-        `%c[HTTP:RES] ${res.config.method?.toUpperCase()} ${res.config.baseURL}${res.config.url} -> ${res.status}`,
-        "color:#16A34A;font-weight:bold;",
-        { data: res.data },
-      );
-      return res;
-    },
-    (error) => {
-      const cfg = error.config as AppRequestConfig | undefined;
-      console.log(
-        `%c[HTTP:ERR] ${cfg?.method?.toUpperCase()} ${cfg?.baseURL}${cfg?.url} -> ${error.response?.status}`,
-        "color:#DC2626;font-weight:bold;",
-        { hadAuth: cfg?._hadAuth, retry: cfg?._retry, data: error.response?.data },
-      );
-      return Promise.reject(error);
-    },
-  );
-}
-
 /* ----------------------------- Request 인터셉터 ----------------------------- */
 http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const c = config as AppRequestConfig;
@@ -110,9 +57,6 @@ http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 function isAuthError(status?: number) {
   return status === 401 || status === 419 || status === 440 || status === 498;
 }
-
-// let isRefreshing = false;
-// let waiters: Array<() => void> = [];
 
 let refreshPromise: Promise<string> | null = null;
 
@@ -145,7 +89,6 @@ export function refreshSilently() {
 http.interceptors.response.use(
   (r) => r,
   async (err) => {
-    //리프래시 조건 체크
     const original = err.config as AppRequestConfig | undefined;
     if (!original || original._retry || !isAuthError(err.response?.status) || !original._hadAuth) {
       throw err;

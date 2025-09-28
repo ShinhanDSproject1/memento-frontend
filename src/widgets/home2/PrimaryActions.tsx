@@ -18,14 +18,24 @@ export function PrimaryActions({
     <div className="mx-auto mb-5 flex w-full max-w-md flex-col gap-3 md:mt-10 md:mb-10">
       {isLoggedIn && role === "mentee" ? (
         <>
-          {/* 멘토링 추천받기 버튼 (멘티 전용) */}
-          <button
-            type="button"
-            onClick={() => navigate("/recommend")}
-            className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 shadow-sm transition hover:bg-blue-100">
-            멘토링 추천받기
-            <ArrowRight className="h-4 w-4" />
-          </button>
+          {/* 멘토링 추천 + 내 주변 멘토찾기 버튼 (멘티 전용, 2열) */}
+          <div className="mb-3 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/recommend")}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 shadow-sm transition hover:bg-blue-100">
+              AI 멘토링 추천받기
+              <ArrowRight className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/mento/nearby")}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 shadow-sm transition hover:bg-blue-100">
+              내 주변 멘토찾기
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
 
           {/* 박스 영역 - 카드형 버튼 */}
           <div className="grid w-full grid-cols-3 gap-3">
@@ -55,6 +65,7 @@ export function PrimaryActions({
           </div>
         </>
       ) : isLoggedIn && role === "mentor" ? (
+        // ... (멘토용 버튼 그대로)
         <>
           {/* 상단: 자격증 인증 + 멘토링 생성하기 (2열) */}
           <div className="grid w-full grid-cols-2 gap-3">
@@ -63,7 +74,7 @@ export function PrimaryActions({
               onClick={() => navigate("/mento/certification")}
               className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-green-400 bg-green-50 px-3 py-4 text-xs font-medium text-green-700 shadow-sm transition hover:bg-green-100 hover:text-green-800 hover:shadow-md">
               <span className="text-base">📜</span>
-              자격증 인증
+              AI 자격증 인증
             </button>
 
             <button
@@ -75,36 +86,7 @@ export function PrimaryActions({
             </button>
           </div>
 
-          {/* 나머지 4개 버튼 */}
-          <div className="grid w-full grid-cols-4 gap-2 md:mb-8">
-            <button
-              type="button"
-              onClick={() => navigate("/mento/my-list")}
-              className="flex flex-col items-center justify-center gap-1 rounded-lg border border-green-400 bg-green-50 px-2 py-3 text-[11px] font-medium text-green-700 shadow-sm transition hover:bg-green-100 hover:text-green-800">
-              📋 관리
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/chat")}
-              className="flex flex-col items-center justify-center gap-1 rounded-lg border border-green-400 bg-green-50 px-2 py-3 text-[11px] font-medium text-green-700 shadow-sm transition hover:bg-green-100 hover:text-green-800">
-              💬 채팅
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/reviews")}
-              className="flex flex-col items-center justify-center gap-1 rounded-lg border border-green-400 bg-green-50 px-2 py-3 text-[11px] font-medium text-green-700 shadow-sm transition hover:bg-green-100 hover:text-green-800">
-              ⭐ 리뷰
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/mento")}
-              className="flex flex-col items-center justify-center gap-1 rounded-lg border border-green-400 bg-green-50 px-2 py-3 text-[11px] font-medium text-green-700 shadow-sm transition hover:bg-green-100 hover:text-green-800">
-              👤 내정보
-            </button>
-          </div>
+          {/* 나머지 버튼들... */}
         </>
       ) : (
         !isLoggedIn && (

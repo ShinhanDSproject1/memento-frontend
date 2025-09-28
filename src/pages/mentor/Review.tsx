@@ -74,7 +74,7 @@ export default function Review() {
     } finally {
       setLoading(false);
     }
-  }, [error]); // error 의존 추가
+  }, [error]);
 
   useEffect(() => {
     let cancelled = false;
@@ -122,13 +122,15 @@ export default function Review() {
   }, [hasMore, loading, fetchMore]);
 
   return (
-    <div className="flex min-h-screen w-full justify-center bg-[#f5f6f8]">
-      <section className="w-full bg-white px-4 py-5">
-        <h1 className="font-WooridaumB mb-6 text-[20px] font-bold">리뷰 확인하기</h1>
+    <div className="flex min-h-screen w-full justify-center bg-gradient-to-b from-emerald-50 to-emerald-100">
+      <section className="w-full max-w-4xl px-6 py-8">
+        <h1 className="font-WooridaumB mb-8 text-[22px] font-bold text-emerald-800">
+          리뷰 확인하기
+        </h1>
 
-        <PageContainer className="space-y-4">
+        <PageContainer className="space-y-6">
           {error && (
-            <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow">
               {error}
             </div>
           )}
@@ -141,6 +143,7 @@ export default function Review() {
               rating={it.rating}
               name={it.name}
               content={it.content}
+              className="p-5 shadow-md hover:shadow-lg"
             />
           ))}
 

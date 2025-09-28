@@ -137,21 +137,18 @@ export default function MentosDetail() {
     const target: any = document;
 
     const handler = (ev: Event) => {
-      const detail = (ev as CustomEvent).detail;
-
+      const _detail = (ev as CustomEvent).detail;
       if (!isLoggedInRef.current && !showLoginFormRef.current) {
         setLoginError(null);
         setShowLoginForm(true);
       }
     };
 
-    // 이미 붙어있으면 또 붙이지 않음
     if (!target[HANDLER_KEY]) {
       target.addEventListener(OPEN_LOGIN_SHEET, handler);
       target[HANDLER_KEY] = handler;
     }
 
-    // 언마운트 시 깔끔하게 해제
     return () => {
       const current = target[HANDLER_KEY] as undefined;
       if (current) {
@@ -159,7 +156,7 @@ export default function MentosDetail() {
         delete target[HANDLER_KEY];
       }
     };
-  }, []); // ← 의존성 비움: 리스너는 한 번만 등록
+  }, []);
 
   /* 리뷰 페이지 로더 */
   const loadMoreReviews = useCallback(async () => {
@@ -225,8 +222,8 @@ export default function MentosDetail() {
         await ctrl.init();
         ctrl.relayout();
         setTimeout(() => ctrl.relayout(), 0);
-      } catch (e) {
-        console.error("[Map] 지도 초기화 실패:", e);
+      } catch {
+        // 지도 초기화 실패 무시 (콘솔 출력 제거)
       }
     })();
     return () => {
@@ -244,7 +241,7 @@ export default function MentosDetail() {
     if (!ctrl || !address) return;
     const services = (window as any)?.kakao?.maps?.services;
     if (!services) {
-      console.warn("[Map] services가 없습니다. SDK에 &libraries=services 포함 필요");
+      // SDK에 &libraries=services 미포함 시 무시 (콘솔 출력 제거)
       return;
     }
     const geocoder = new services.Geocoder();
@@ -471,10 +468,9 @@ export default function MentosDetail() {
             onSubmit={handleLoginSubmit}
             error={loginError}
             loading={isLoggingIn}
-            placement="container" // ← fixed 대신 container
+            placement="container"
             className="z-[9999]"
           />,
-          // ← 포털 타겟을 앱 화면 컨테이너로!
           (document.querySelector("[data-app-screen]") as HTMLElement) ??
             (document.getElementById("memento-sim-root") as HTMLElement) ??
             document.body,
