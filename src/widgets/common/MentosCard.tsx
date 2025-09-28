@@ -17,7 +17,7 @@ type MentosCardProps = {
   onDeleteClick?: () => void;
   refundDisabled?: boolean;
   reviewDisabled?: boolean;
-  /** 2장 딱 맞춤용 고정 높이 (리스트에서 내려줌) */
+  reportDisabled?: boolean; // ✅ 추가됨
   fixedHeight?: number;
 };
 
@@ -32,22 +32,32 @@ const statusTextMap: Partial<Record<MentosStatus, string>> = {
   pending: "진행 전",
 };
 
-export default function MentosCard({
-  mentosSeq,
-  onReviewClick,
-  onDeleteClick,
-  onRefundClick,
-  onReportClick,
-  onUpdateClick,
-  title,
-  price,
-  location,
-  status,
-  imageUrl,
-  refundDisabled,
-  reviewDisabled,
-  fixedHeight,
-}: MentosCardProps) {
+export default function MentosCard(props: MentosCardProps) {
+  const {
+    mentosSeq,
+    onReviewClick,
+    onDeleteClick,
+    onRefundClick,
+    onReportClick,
+    onUpdateClick,
+    title,
+    price,
+    location,
+    status,
+    imageUrl,
+    refundDisabled,
+    reviewDisabled,
+    reportDisabled, // ✅ 구조분해에도 추가
+    fixedHeight,
+  } = props;
+
+  // 🔒 버튼 클릭 시 링크 이동 차단 + 상위로 버블링 차단
+  const act = (fn?: () => void) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fn?.();
+  };
+
   const statusClassName = statusStyles[status] ?? "";
   const statusText = statusTextMap[status] ?? "";
   const formattedPrice =
@@ -58,21 +68,32 @@ export default function MentosCard({
   const actionButton = (() => {
     switch (status) {
       case "completed": {
-        const isDisabled = !!reviewDisabled;
+        const isReviewDisabled = !!reviewDisabled;
+        const isReportDisabled = !!reportDisabled;
         return (
           <>
+            {/* 리뷰 버튼 */}
             <Button
-              className={`text-xs ${isDisabled ? "cursor-not-allowed opacity-70" : ""}`}
+              className={`text-xs ${isReviewDisabled ? "cursor-not-allowed opacity-70" : ""}`}
               variant="lightBlue"
               size="sm"
-              disabled={isDisabled}
-              aria-disabled={isDisabled}
-              onClick={isDisabled ? undefined : onReviewClick}
-              title={isDisabled ? "이미 리뷰를 작성했습니다" : "리뷰 작성"}>
-              {isDisabled ? "리뷰 완료" : "리뷰 작성"}
+              disabled={isReviewDisabled}
+              aria-disabled={isReviewDisabled}
+              onClick={isReviewDisabled ? undefined : act(onReviewClick)}
+              title={isReviewDisabled ? "이미 리뷰를 작성했습니다" : "리뷰 작성"}>
+              {isReviewDisabled ? "리뷰 완료" : "리뷰 작성"}
             </Button>
-            <Button className="text-xs" variant="danger" size="sm" onClick={onReportClick}>
-              신고하기
+
+            {/* 신고 버튼 */}
+            <Button
+              className={`text-xs ${isReportDisabled ? "cursor-not-allowed opacity-70" : ""}`}
+              variant="danger"
+              size="sm"
+              disabled={isReportDisabled}
+              aria-disabled={isReportDisabled}
+              onClick={isReportDisabled ? undefined : act(onReportClick)}
+              title={isReportDisabled ? "이미 신고한 항목입니다" : "신고하기"}>
+              {isReportDisabled ? "신고 완료" : "신고하기"}
             </Button>
           </>
         );
@@ -86,7 +107,7 @@ export default function MentosCard({
             size="sm"
             disabled={isDisabled}
             aria-disabled={isDisabled}
-            onClick={isDisabled ? undefined : onRefundClick}
+            onClick={isDisabled ? undefined : act(onRefundClick)}
             title={isDisabled ? "환불이 불가한 항목입니다" : "환불하기"}>
             환불하기
           </Button>
@@ -95,10 +116,10 @@ export default function MentosCard({
       case "mento":
         return (
           <>
-            <Button className="text-xs" variant="lightBlue" size="sm" onClick={onUpdateClick}>
+            <Button className="text-xs" variant="lightBlue" size="sm" onClick={act(onUpdateClick)}>
               수정하기
             </Button>
-            <Button className="text-xs" variant="danger" size="sm" onClick={onDeleteClick}>
+            <Button className="text-xs" variant="danger" size="sm" onClick={act(onDeleteClick)}>
               삭제하기
             </Button>
           </>
@@ -112,14 +133,10 @@ export default function MentosCard({
     <div
       className={[
         "mx-auto w-full max-w-[400px] snap-start",
-        // Glass-lite 카드
         "overflow-hidden rounded-2xl bg-white/90 backdrop-blur-[1px]",
         "shadow-[0_6px_18px_-8px_rgba(2,6,23,0.20)] ring-1 ring-slate-200",
-        // 터치 시만 미세한 압축감
         "transition-transform active:scale-[0.997]",
-        // 파랑 하이라이트 제거
         "focus-within:ring-0",
-        // 성능
         "content-visibility-auto will-change-transform",
       ].join(" ")}
       style={fixedHeight ? ({ height: `${fixedHeight}px` } as React.CSSProperties) : undefined}>
@@ -127,7 +144,7 @@ export default function MentosCard({
         to={`/menti/mentos-detail/${mentosSeq}`}
         className="block h-full outline-none focus-visible:outline-none"
         style={{ WebkitTapHighlightColor: "transparent" }}>
-        {/* 썸네일: 72% (더 크게) */}
+        {/* 썸네일 */}
         <div className="relative h-[72%] overflow-hidden bg-slate-100">
           <img
             className="h-full w-full object-cover"
@@ -147,15 +164,14 @@ export default function MentosCard({
           )}
         </div>
 
+        {/* 정보 */}
         <div className="flex h-[28%] flex-col justify-between px-3.5 py-3">
-          {/* 제목 */}
-          <h3 className="font-WooridaumR line-clamp-2 text-[16px] leading-snug font-semibold tracking-[-0.2px] text-slate-900">
+          <h3 className="line-clamp-2 text-[14px] leading-snug font-semibold tracking-[-0.2px] text-slate-900">
             {title}
           </h3>
 
-          {/* 메타 & 가격 */}
           <div className="mt-2 flex items-center justify-between">
-            <div className="font-WooridaumR flex items-center text-slate-500">
+            <div className="flex items-center text-slate-500">
               <svg
                 className="mr-1.5 h-4 w-4 flex-shrink-0"
                 viewBox="0 0 24 24"
@@ -176,14 +192,11 @@ export default function MentosCard({
               </svg>
               <span className="truncate text-[12px]"> {location} </span>
             </div>
-
-            {/* 뉴트럴 가격 pill (작게, 고대비) */}
-            <span className="font-WooridaumR rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-semibold text-slate-900">
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-semibold text-slate-900">
               ₩{formattedPrice}
             </span>
           </div>
 
-          {/* 필요한 경우만 버튼 */}
           {actionButton && <div className="mt-2 flex gap-2">{actionButton}</div>}
         </div>
       </Link>
