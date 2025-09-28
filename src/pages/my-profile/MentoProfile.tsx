@@ -376,12 +376,12 @@ export default function MentorProfile() {
                   type="button">
                   소개글 수정
                 </button>
-                <button
+                {/* <button
                   className="cursor-pointer rounded-lg bg-[#1068F9] px-5 py-2 text-sm font-semibold text-white"
                   onClick={() => navigate("/mento/certification")}
                   type="button">
                   자격증 추가
-                </button>
+                </button> */}
               </div>
 
               {/* ✅ 계정 탈퇴 버튼 */}

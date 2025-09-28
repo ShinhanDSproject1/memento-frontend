@@ -36,14 +36,16 @@ function formatTime(ts?: number) {
 export default function ChatListPage() {
   const [rooms, setRooms] = useState<Room[] | null>(null);
   const [error, setError] = useState<string>("");
+  const [role, setRole] = useState<"mento" | "menti">("menti"); // ✅ 현재 사용자 롤 저장
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
         // JWT payload에서 role 가져오기
-        const role: "mento" | "menti" = isMentiUser() ? "menti" : "mento";
-        const list = await getRooms(role);
+        const detectedRole: "mento" | "menti" = isMentiUser() ? "menti" : "mento";
+        setRole(detectedRole); // ✅ 상태 저장
+        const list = await getRooms(detectedRole);
         if (!alive) return;
         setRooms(list);
       } catch (e: any) {
@@ -56,22 +58,23 @@ export default function ChatListPage() {
     };
   }, []);
 
-  const grouped = useMemo(() => {
-    const result = groupBy(rooms ?? [], "group");
-    return result;
-  }, [rooms]);
+  const grouped = useMemo(() => groupBy(rooms ?? [], "group"), [rooms]);
+  const groupEntries = useMemo(
+    () => Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b, "ko", { numeric: true })),
+    [grouped],
+  );
 
-  const groupEntries = useMemo(() => {
-    const entries = Object.entries(grouped).sort(([a], [b]) =>
-      a.localeCompare(b, "ko", { numeric: true }),
-    );
-    return entries;
-  }, [grouped]);
+  // ✅ role에 따른 배경 색상
+  const bgClass =
+    role === "menti"
+      ? "bg-gradient-to-b from-blue-50 to-blue-100"
+      : "bg-gradient-to-b from-green-50 to-green-100";
 
   return (
-    <div className="l flex min-h-screen w-full justify-center overflow-x-hidden bg-[#f5f6f8] antialiased">
-      <section className="w-full overflow-x-hidden bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1] px-4 py-5">
-        <h1 className="font-WooridaumB mt-6 mb-15 pl-2 text-[20px]">멘티 채팅</h1>
+    <div
+      className={`flex min-h-screen w-full justify-center overflow-x-hidden ${bgClass} antialiased`}>
+      <section className="w-full overflow-x-hidden bg-transparent px-4 py-5">
+        <h1 className="font-WooridaumB mt-6 mb-15 pl-2 text-[20px]">채팅</h1>
 
         {rooms === null && !error && (
           <div className="font-WooridaumL px-3 py-6 text-sm text-slate-500">
@@ -87,31 +90,35 @@ export default function ChatListPage() {
 
         {rooms && rooms.length > 0 && (
           <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-3">
-            {groupEntries.map(([title, items], i) => (
-              <section key={title} className={i > 0 ? "border-t border-[#eef0f4] pt-3" : ""}>
-                <h3 className="font-WooridaumR mb-3 px-1 text-[18px] text-[#3c3d3c]">{title}</h3>
+            {groupEntries.map(([title, items]) => (
+              <section
+                key={title}
+                className="rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-sm">
+                <h3 className="font-WooridaumR mb-3 px-1 text-[18px] font-semibold text-gray-800">
+                  {title}
+                </h3>
                 <ul className="space-y-3">
                   {items.map((r) => (
                     <li key={r.id}>
                       <Link
                         to={`/chat/${r.id}`}
                         state={{ room: { id: r.id, name: r.name, group: r.group } }}
-                        className="flex items-center gap-3 rounded-[14px] border border-[#eef0f4] bg-white px-4 py-3 shadow-[0_1px_0_rgba(17,17,17,0.02)] hover:bg-[#fafafa]">
+                        className="flex items-center gap-3 rounded-[14px] border border-gray-200 bg-gray-50 px-4 py-3 shadow-sm transition hover:bg-blue-50">
                         <div className="grid h-12 w-12 place-items-center rounded-full bg-[#f1f3f6] text-xl">
                           <img src={defaultimage} alt="gom" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          {/* 이름 + 시간 */}
                           <div className="flex items-start justify-between">
-                            <div className="font-WooridaumR truncate text-[14px]">{r.name}</div>
+                            <div className="font-WooridaumR truncate text-[14px] font-medium text-gray-900">
+                              {r.name}
+                            </div>
                             {r.lastAt ? (
-                              <div className="ml-2 shrink-0 text-[11px] text-[#9aa2ae]">
+                              <div className="ml-2 shrink-0 text-[11px] text-gray-500">
                                 {formatTime(r.lastAt)}
                               </div>
                             ) : null}
                           </div>
-                          {/* 미리보기 */}
-                          <div className="font-WooridaumL truncate text-[12px] text-[#9aa2ae]">
+                          <div className="font-WooridaumL truncate text-[12px] text-gray-600">
                             {r.preview}
                           </div>
                         </div>

@@ -90,7 +90,7 @@ export default function MentoIntroduce() {
   };
 
   return (
-    <main className="bg-white">
+    <main>
       <div className="mx-auto w-full max-w-screen-sm space-y-10 px-4 pt-8 pb-10 sm:max-w-md md:max-w-lg">
         {/* 로고 + 인사 */}
         <div className="mb-5 text-center">
@@ -137,7 +137,7 @@ export default function MentoIntroduce() {
         {/* 소개글 */}
         <section className="flex flex-col gap-2">
           <p className="font-WooridaumB text-lg font-bold">소개글 입력</p>
-          <div className="flex h-80 max-w-[90vw] items-center justify-center overflow-hidden rounded border border-gray-200">
+          <div className="flex h-80 max-w-[90vw] items-center justify-center overflow-hidden rounded border border-gray-200 bg-white">
             {/* ✅ SimpleEditor가 value/onChange를 지원해야 합니다 */}
             <SimpleEditor value={profileContent} onChange={setProfileContent} />
           </div>

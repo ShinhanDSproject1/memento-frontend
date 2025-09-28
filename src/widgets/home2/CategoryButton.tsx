@@ -3,23 +3,33 @@ import { CreditCard, Lightbulb, LineChart, PiggyBank } from "lucide-react";
 import { type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
+type Role = "mentee" | "mentor" | undefined;
+
 /* ----------------------------- 단일 버튼 ----------------------------- */
 export function CategoryButton({
   icon,
   label,
   to,
+  role,
 }: {
   icon: ReactNode;
   label: string;
   to: string;
+  role?: Role;
 }) {
   const navigate = useNavigate();
+
+  // ✅ 역할별 색상 분기
+  const baseClass =
+    role === "mentor"
+      ? "bg-emerald-500 text-white hover:bg-emerald-600 border border-emerald-600"
+      : "bg-blue-500 text-white hover:bg-blue-600 border border-blue-600";
 
   return (
     <button
       type="button"
       onClick={() => navigate(to)}
-      className="flex w-full flex-1 items-center justify-center gap-2 rounded-xl bg-[#3B82F6] py-2 text-[12px] font-semibold text-white shadow-md transition hover:bg-[#2563EB]">
+      className={`flex w-full flex-1 items-center justify-center gap-1 rounded-xl py-2 text-[12px] font-semibold shadow-md transition ${baseClass}`}>
       {icon}
       <span>{label}</span>
     </button>
@@ -36,15 +46,16 @@ const categories: { key: CategoryKey; label: string; Icon: any }[] = [
   { key: "growth", label: "자산증식", Icon: LineChart },
 ];
 
-export function CategoryButtonGroup() {
+export function CategoryButtonGroup({ role }: { role?: Role }) {
   return (
-    <section className="mx-auto mt-1 flex w-full max-w-lg justify-center gap-2 md:mt-5">
+    <section className="mx-auto mt-5 flex w-full max-w-lg justify-center gap-2">
       {categories.map(({ key, label, Icon }) => (
         <CategoryButton
           key={key}
           icon={<Icon className="h-4 w-4" />}
           label={label}
           to={`/menti/${key}`}
+          role={role}
         />
       ))}
     </section>

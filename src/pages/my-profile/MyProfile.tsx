@@ -327,9 +327,9 @@ export default function MyProfile() {
           </section>
 
           {/* 계정 탈퇴 */}
-          <div className="mb-12 flex w-full justify-end">
+          <div className="flex w-full justify-end">
             <button
-              className="w-fit cursor-pointer rounded-lg py-15 text-sm font-semibold text-black underline"
+              className="w-fit cursor-pointer rounded-lg text-sm font-semibold text-black underline"
               type="button"
               onClick={handleWithdrawClick}>
               계정 탈퇴

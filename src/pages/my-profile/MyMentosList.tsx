@@ -141,7 +141,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
   const [cardH, setCardH] = useState(0);
 
   useEffect(() => {
-    const calcHeights = () => {
+    const calc = () => {
       const titleBottom =
         headerRef.current?.getBoundingClientRect().bottom ??
         scrollRef.current?.getBoundingClientRect().top ??
@@ -149,11 +149,24 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
       const viewportH = window.innerHeight;
       const available = Math.max(0, viewportH - titleBottom - PAGE_PADDING_BOTTOM);
       setListH(available);
-      setCardH(Math.floor((available - GAP_PX) / 2)); // gap 한 번 빼고 2장 분배
+      setCardH(Math.floor((available - GAP_PX) / 2));
     };
-    calcHeights();
-    window.addEventListener("resize", calcHeights);
-    return () => window.removeEventListener("resize", calcHeights);
+
+    // 첫 계산 (레이아웃 잡힌 뒤 실행)
+    const raf = requestAnimationFrame(calc);
+
+    // 윈도우 리사이즈 대응
+    window.addEventListener("resize", calc);
+
+    // 헤더 자체 사이즈 변화(폰트 로딩, 줄바꿈 등) 대응
+    const ro = new ResizeObserver(calc);
+    if (headerRef.current) ro.observe(headerRef.current);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", calc);
+      ro.disconnect();
+    };
   }, []);
 
   // 모달/네비게이션
@@ -366,10 +379,10 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
   const pageTitle = role === "mento" ? "멘토링 관리" : "나의 멘토링 내역";
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#F8FAFF_0%,#FFFFFF_60%,#F7FAFF_100%)] font-sans antialiased">
-      <div className="mx-auto min-h-screen max-w-md">
-        {/* Title */}
-        <div ref={headerRef} className="px-6 pt-4 pb-2">
+    <div className="min-h-screen bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1] font-sans antialiased">
+      <div className="mx-auto min-h-screen max-w-md bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1]">
+        {/* Title (MentosList와 동일하게) */}
+        <div ref={headerRef} className="relative z-10 px-6 pb-2">
           <div className="flex items-baseline justify-between">
             <MentosMainTitleComponent mainTitle={pageTitle} />
             {role === "mento" && (
@@ -405,7 +418,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
           )}
 
           {/* List */}
-          <section className="flex flex-col gap-6 pt-4">
+          <section className="flex flex-col gap-6 pt-1">
             {role === "mento"
               ? mentorList.map((item) => (
                   <MentosCard
@@ -414,7 +427,8 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                     title={item.mentosTitle}
                     price={item.price}
                     location={item.region}
-                    status="pending"
+                    status="mento" // ✅ 멘토 전용 버튼(수정/삭제) 활성화
+                    role="mento" // ✅ 링크 분기 등 컨텍스트 전달
                     imageUrl={item.mentosImage}
                     reportDisabled={!!item.reportCompleted}
                     onUpdateClick={() => onUpdateClick(item.mentosSeq)}
@@ -428,7 +442,6 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                     ? `${dateLabel}${item.region ? ` · ${item.region}` : ""}`
                     : item.region;
 
-                  // 진행 상태(간단 추정): 리뷰 가능이면 completed, 아니면 pending
                   const status = item.reviewCompleted ? "completed" : "pending";
 
                   return (

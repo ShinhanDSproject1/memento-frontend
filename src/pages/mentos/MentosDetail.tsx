@@ -18,6 +18,7 @@ import locationIcon from "@assets/icons/icon-location.svg";
 import starIcon from "@assets/icons/icon-star.svg";
 
 import DOMPurify from "dompurify";
+import { createPortal } from "react-dom";
 
 /* ---------- HTML sanitize ---------- */
 function toHtml(input?: string): { __html: string } {
@@ -79,7 +80,7 @@ export default function MentosDetail() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
-  // 로그인 시트 상태 (홈과 동일 패턴)
+  // 로그인 시트 상태
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -96,6 +97,19 @@ export default function MentosDetail() {
   // 지도
   const mapDivRef = useRef<HTMLDivElement | null>(null);
   const ctrlRef = useRef<KakaoMapController | null>(null);
+
+  // 이벤트 이름 (헤더와 일치)
+  const OPEN_LOGIN_SHEET = "app:login:open";
+
+  // 최신 상태를 이벤트 핸들러에서 참조하기 위한 ref
+  const isLoggedInRef = useRef(isLoggedIn);
+  const showLoginFormRef = useRef(showLoginForm);
+  useEffect(() => {
+    isLoggedInRef.current = isLoggedIn;
+  }, [isLoggedIn]);
+  useEffect(() => {
+    showLoginFormRef.current = showLoginForm;
+  }, [showLoginForm]);
 
   /* 상세 API */
   useEffect(() => {
@@ -116,6 +130,36 @@ export default function MentosDetail() {
       alive = false;
     };
   }, [id]);
+
+  /* 헤더 이벤트 → 로그인 시트 열기 (이 페이지에서만 반응, 중복 리스너 방지) */
+  useEffect(() => {
+    const HANDLER_KEY = "__mentos_login_handler__";
+    const target: any = document;
+
+    const handler = (ev: Event) => {
+      const detail = (ev as CustomEvent).detail;
+
+      if (!isLoggedInRef.current && !showLoginFormRef.current) {
+        setLoginError(null);
+        setShowLoginForm(true);
+      }
+    };
+
+    // 이미 붙어있으면 또 붙이지 않음
+    if (!target[HANDLER_KEY]) {
+      target.addEventListener(OPEN_LOGIN_SHEET, handler);
+      target[HANDLER_KEY] = handler;
+    }
+
+    // 언마운트 시 깔끔하게 해제
+    return () => {
+      const current = target[HANDLER_KEY] as undefined;
+      if (current) {
+        target.removeEventListener(OPEN_LOGIN_SHEET, current);
+        delete target[HANDLER_KEY];
+      }
+    };
+  }, []); // ← 의존성 비움: 리스너는 한 번만 등록
 
   /* 리뷰 페이지 로더 */
   const loadMoreReviews = useCallback(async () => {
@@ -140,7 +184,7 @@ export default function MentosDetail() {
     }
   }, [id, rvCursor, rvHasNext, rvLoading]);
 
-  // ID 바뀌면 초기화
+  // ID 바뀔 때 초기화
   useEffect(() => {
     rvSeenRef.current.clear();
     setReviews([]);
@@ -198,13 +242,13 @@ export default function MentosDetail() {
     const ctrl = ctrlRef.current;
     const address = data?.mentosLocation;
     if (!ctrl || !address) return;
-    const services = window.kakao?.maps?.services;
+    const services = (window as any)?.kakao?.maps?.services;
     if (!services) {
       console.warn("[Map] services가 없습니다. SDK에 &libraries=services 포함 필요");
       return;
     }
     const geocoder = new services.Geocoder();
-    geocoder.addressSearch(address, (result, status) => {
+    geocoder.addressSearch(address, (result: any[], status: string) => {
       if (status === "OK" && result?.[0]) {
         const lat = parseFloat(result[0].y);
         const lng = parseFloat(result[0].x);
@@ -220,23 +264,18 @@ export default function MentosDetail() {
   /* 예약 버튼 */
   const handleGoBooking = () => {
     if (!id || !data) return;
-    if (isMentor) return; // 문구로 안내, 버튼은 비활성 처리
+    if (isMentor) return; // 멘토는 예약 불가
     if (!isLoggedIn) {
       setShowLoginForm(true);
       setLoginError(null);
       return;
     }
     navigate("/booking", {
-      state: {
-        mentosSeq: Number(id),
-        title: data.mentosTitle,
-        price: data.mentosPrice,
-      },
+      state: { mentosSeq: Number(id), title: data.mentosTitle, price: data.mentosPrice },
     });
   };
 
-  /* 로그인 제출(홈과 동일 패턴) */
-  /* 로그인 제출(홈과 동일 패턴) */
+  /* 로그인 제출 */
   const handleLoginSubmit = async ({
     id: pid,
     pw: ppw,
@@ -251,12 +290,8 @@ export default function MentosDetail() {
     try {
       const userType = rrole === "mentor" ? "MENTO" : "MENTI";
       await login({ userType, memberId: pid, memberPwd: ppw });
-
-      // 로그인 성공 → 모달 닫기
       setShowLoginForm(false);
-
       if (rrole === "mentee" && data) {
-        // 멘티일 경우 예약 페이지로 이동
         navigate("/booking", {
           state: {
             mentosSeq: Number(id),
@@ -266,7 +301,6 @@ export default function MentosDetail() {
           },
         });
       }
-      // 멘토라면 아무 동작 없이 현재 페이지 유지
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
@@ -428,15 +462,23 @@ export default function MentosDetail() {
         )}
       </div>
 
-      {/* ✅ 이 페이지 안에서 바텀시트 로그인 모달 표시 (홈과 동일한 패턴) */}
-      <LoginSheet
-        open={showLoginForm && !isLoggedIn}
-        onClose={() => setShowLoginForm(false)}
-        onSubmit={handleLoginSubmit}
-        error={loginError}
-        loading={isLoggingIn}
-        placement="container" // ← container 모드 (absolute, 부모 기준)
-      />
+      {/* ✅ 포털로 로그인 모달 (뷰포트 기준) */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <LoginSheet
+            open={showLoginForm && !isLoggedIn}
+            onClose={() => setShowLoginForm(false)}
+            onSubmit={handleLoginSubmit}
+            error={loginError}
+            loading={isLoggingIn}
+            placement="container" // ← fixed 대신 container
+            className="z-[9999]"
+          />,
+          // ← 포털 타겟을 앱 화면 컨테이너로!
+          (document.querySelector("[data-app-screen]") as HTMLElement) ??
+            (document.getElementById("memento-sim-root") as HTMLElement) ??
+            document.body,
+        )}
     </main>
   );
 }

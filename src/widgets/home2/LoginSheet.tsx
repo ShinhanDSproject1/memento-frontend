@@ -1,3 +1,4 @@
+// src/widgets/home2/LoginSheet.tsx
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
@@ -11,7 +12,7 @@ export function LoginSheet({
   onSubmit,
   error,
   loading,
-  placement = "container", // ✅ 추가: 'fixed'면 화면 하단에서 올라오는 바텀시트
+  placement = "container", // 'fixed'면 뷰포트 기준, 'container'면 부모/스크린 기준
   className = "",
 }: {
   open: boolean;
@@ -27,7 +28,7 @@ export function LoginSheet({
   const [pw, setPw] = useState("");
   const [showPw, setShowPw] = useState(false);
 
-  const canSubmit = id.trim() && pw.trim() && !loading;
+  const canSubmit = id.trim() !== "" && pw.trim() !== "" && !loading;
 
   // ESC로 닫기
   useEffect(() => {
@@ -39,14 +40,14 @@ export function LoginSheet({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  // 스크롤 잠금 (placement에 따라 대상 다름)
+  // 스크롤 잠금 (placement에 따라 잠글 대상 다르게)
   useEffect(() => {
     if (!open) return;
     const target =
       placement === "fixed"
         ? (document.documentElement as HTMLElement) // 뷰포트 전체 고정
         : ((document.querySelector("[data-app-screen]") as HTMLElement | null) ??
-          (document.getElementById("memento-sim-root") as HTMLElement | null));
+          (document.getElementById("memento-sim-root") as HTMLElement | null)); // 앱 스크린 컨테이너
 
     const prevOverflow = target?.style.overflow ?? "";
     if (target) target.style.overflow = "hidden";
@@ -55,16 +56,16 @@ export function LoginSheet({
     };
   }, [open, placement]);
 
-  const handle = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
     await onSubmit({ id: id.trim(), pw, role });
   };
 
-  // ✅ 위치 클래스: container 모드(부모 기준 absolute) vs fixed 모드(뷰포트 기준 fixed)
+  // 위치 클래스: container(absolute) vs fixed
   const overlayPos = placement === "fixed" ? "fixed inset-0" : "absolute inset-0";
   const sheetPos =
-    placement === "fixed" ? "fixed inset-x-0 bottom-0" : "absolute right-0 bottom-0 left-0";
+    placement === "fixed" ? "fixed inset-x-0 bottom-0" : "absolute left-0 right-0 bottom-0";
 
   return (
     <AnimatePresence>
@@ -81,7 +82,7 @@ export function LoginSheet({
             exit={{ opacity: 0 }}
           />
 
-          {/* Bottom sheet */}
+          {/* Bottom Sheet */}
           <motion.div
             className={`${sheetPos} z-[70] ${className}`}
             initial={{ y: "100%" }}
@@ -90,11 +91,14 @@ export function LoginSheet({
             transition={{ type: "spring", stiffness: 420, damping: 40 }}
             role="dialog"
             aria-modal="true"
+            // 시트 내부 클릭이 오버레이로 전파되어 닫히지 않도록
             onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto w-full max-w-md rounded-t-2xl bg-white p-4 shadow-2xl ring-1 ring-black/5">
+              {/* 핸들바 */}
               <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-black/15" />
 
-              <form onSubmit={handle} className="flex flex-col gap-4">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                {/* 멘티/멘토 토글 */}
                 <RoleToggle value={role} onChange={setRole} />
 
                 {/* 아이디 */}
@@ -144,8 +148,10 @@ export function LoginSheet({
                   </button>
                 </div>
 
+                {/* 에러 */}
                 {error && <p className="text-xs text-red-600">* {error}</p>}
 
+                {/* 제출 */}
                 <button
                   type="submit"
                   disabled={!canSubmit}
@@ -164,3 +170,5 @@ export function LoginSheet({
     </AnimatePresence>
   );
 }
+
+export default LoginSheet;

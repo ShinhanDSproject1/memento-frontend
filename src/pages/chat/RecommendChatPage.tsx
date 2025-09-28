@@ -126,8 +126,8 @@ export default function RecommendChatPage() {
   };
 
   return (
-    <main className="relative h-screen w-full bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1] px-4 md:h-180">
-      <section className="mx-auto mt-4 w-full max-w-lg">
+    <main className="relative h-screen w-full bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1] px-4 pt-5 md:h-190">
+      <section className="mx-auto w-full max-w-lg">
         <CategoryButtonGroup />
       </section>
 
@@ -137,7 +137,7 @@ export default function RecommendChatPage() {
         <CharacterFigure glowed={isLoggedIn} />
       </section>
 
-      <section className="mx-auto mt-20 mb-3 w-full max-w-md md:mt-30">
+      <section className="mx-auto mt-40 mb-3 w-full max-w-md md:mt-30">
         <div className="rounded-2xl bg-white/80 p-3 shadow ring-1 ring-black/5 backdrop-blur">
           <div className="flex items-center gap-2">
             <input
