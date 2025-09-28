@@ -188,7 +188,7 @@ export default function MyProfile() {
   /* ── view ───────────────────────────── */
   return (
     <div className="font-WooridaumB flex min-h-screen justify-center bg-[#f5f6f8] antialiased">
-      <main className="min-h-dvh w-full bg-white px-4 py-8 shadow">
+      <main className="min-h-dvh w-full bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1] px-4 py-8 shadow">
         <PageContainer>
           {/* 내 프로필 */}
           <h2 className={headingCls}>내 프로필</h2>
@@ -327,9 +327,9 @@ export default function MyProfile() {
           </section>
 
           {/* 계정 탈퇴 */}
-          <div className="mb-12 flex w-full justify-end">
+          <div className="flex w-full justify-end">
             <button
-              className="w-fit cursor-pointer rounded-lg py-15 text-sm font-semibold text-black underline"
+              className="w-fit cursor-pointer rounded-lg text-sm font-semibold text-black underline"
               type="button"
               onClick={handleWithdrawClick}>
               계정 탈퇴

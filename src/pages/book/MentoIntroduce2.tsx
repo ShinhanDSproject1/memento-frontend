@@ -1,7 +1,6 @@
 // src/pages/MentoIntroduce.tsx
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 
-import Button from "@/widgets/common/Button";
 import DayChips, { DAYS, type Day } from "@/widgets/common/DayChips";
 import HourRangePicker, { type HourRange } from "@/widgets/common/HourRangePicker";
 import LocationField, { type LocationFieldValue } from "@/widgets/common/LocationField";
@@ -10,12 +9,11 @@ import { SimpleEditor } from "@/widgets/common/tiptap-templates/simple/simple-ed
 import kogiriFace from "@assets/images/character/character-kogiri-face.svg";
 import { updateMentoProfileDetail, useMentoProfileDetail } from "@entities/profile";
 
-// ★ 모달 훅 & 컴포넌트
 import { useModal } from "@hooks/ui/useModal";
 import type { ModalKey } from "@shared/ui/ModalConfig";
 import { CommonModal } from "@widgets/common";
 
-// ---------- 유틸: 서버 ↔ UI 매핑 ----------
+/* ---------- 유틸: 서버 ↔ UI 매핑 ---------- */
 const ISO_TO_KOR_DAY: Record<string, Day> = {
   MON: "월",
   TUE: "화",
@@ -36,7 +34,6 @@ const KOR_TO_ISO_DAY: Record<Day, string> = {
   토: "SAT",
 };
 
-// "MON,WED,FRI" → Day[]
 function parseAvailableDays(src?: string | null): Day[] {
   if (!src) return [];
   const set = new Set<Day>(DAYS as unknown as Day[]);
@@ -47,7 +44,6 @@ function parseAvailableDays(src?: string | null): Day[] {
     .filter((d): d is Day => Boolean(d) && set.has(d));
 }
 
-// "09:00" → 9
 function parseHour(hhmm?: string | null, fallback: number): number {
   if (!hhmm) return fallback;
   const [hh] = hhmm.split(":");
@@ -55,14 +51,11 @@ function parseHour(hhmm?: string | null, fallback: number): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
-// 9 → "09:00"
 const toHHMM = (h: number) => String(h).padStart(2, "0") + ":00";
 
 export default function MentoIntroduce() {
-  // 서버 조회 훅 (react-query 등)
   const { data, isLoading, isError, error, refetch, isFetching } = useMentoProfileDetail();
 
-  // ★ 모달
   const { isOpen, modalType, modalData, openModal, closeModal } = useModal() as {
     isOpen: boolean;
     modalType?: ModalKey;
@@ -71,21 +64,16 @@ export default function MentoIntroduce() {
     closeModal: () => void;
   };
 
-  // 이미지 (미리보기 + 실제 업로드 파일)
   const [overrideImage, setOverrideImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const profileImage = overrideImage ?? data?.mentoProfileImage ?? kogiriFace;
   const hasRealImage = Boolean(overrideImage || data?.mentoProfileImage);
 
-  // 소개글
   const [profileContent, setProfileContent] = useState<string>("");
-
-  // 요일/시간
   const [selectedDays, setSelectedDays] = useState<Day[]>([]);
   const emptyDays = useMemo<Day[]>(() => [], []);
   const [hours, setHours] = useState<HourRange>({ start: 10, end: 18 });
 
-  // 주소
   const [location, setLocation] = useState<LocationFieldValue>({
     zonecode: "",
     address: "",
@@ -93,22 +81,16 @@ export default function MentoIntroduce() {
     bname: undefined,
   } as LocationFieldValue);
 
-  // ✅ 페이지 진입 시 항상 서버 재조회 (세션 값 사용 안 함)
   useEffect(() => {
-    // 폼 초기화
     setOverrideImage(null);
     setImageFile(null);
     setProfileContent("");
     setSelectedDays([]);
     setHours({ start: 10, end: 18 });
     setLocation({ zonecode: "", address: "", detail: "", bname: undefined } as LocationFieldValue);
-
-    // 강제 최신 데이터 가져오기
     refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // 최초 1회
+  }, []);
 
-  // 서버 데이터 → 폼 상태 반영
   useEffect(() => {
     if (!data) return;
 
@@ -131,11 +113,9 @@ export default function MentoIntroduce() {
     });
   }, [data]);
 
-  // 이미지 선택 → 미리보기 & 업로드 파일 보관
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.currentTarget.files?.[0];
     if (!file) return;
-
     setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -144,51 +124,41 @@ export default function MentoIntroduce() {
     reader.readAsDataURL(file);
   };
 
-  // 저장 (PATCH) 후 재조회 — 모든 alert → 모달로 변경
   const handleSubmit = async () => {
     const requestDto = {
       mentoProfileContent: profileContent,
       startTime: toHHMM(hours.start),
       endTime: toHHMM(hours.end),
-      availableDays: selectedDays.map((d) => KOR_TO_ISO_DAY[d]).join(","), // "MON,WED"
+      availableDays: selectedDays.map((d) => KOR_TO_ISO_DAY[d]).join(","),
       mentoPostcode: location.zonecode,
       mentoRoadAddress: location.address,
       mentoBname: location.bname ?? "",
       mentoDetail: location.detail ?? "",
     };
 
-    // 로딩 모달
     openModal("loading", { title: "저장 중입니다…", description: "잠시만 기다려주세요 ⏳" });
 
     try {
-      const res = await updateMentoProfileDetail({
-        requestDto,
-        imageFile,
-      });
-
-      closeModal(); // loading 닫기
-
+      const res = await updateMentoProfileDetail({ requestDto, imageFile });
+      closeModal();
       if (res.code === 1000) {
-        // ✅ 성공 모달 (프로젝트의 완료용 키로 교체 가능: e.g. "saveComplete")
         openModal("reviewComplete", { message: "프로필이 저장되었습니다." });
         await refetch();
       } else {
-        // ✅ 에러 모달
         openModal("withdrawFailed", { message: res.message || "프로필 저장에 실패했습니다." });
       }
     } catch (e: any) {
-      closeModal(); // loading 닫기
+      closeModal();
       openModal("withdrawFailed", {
         message: e?.response?.data?.message || "프로필 저장 중 오류가 발생했습니다.",
       });
     }
   };
 
-  // 첫 로딩/재조회 로딩
   if (isLoading || isFetching) {
     return (
       <div className="p-6 text-center">
-        <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+        <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
         <p>프로필 불러오는 중…</p>
       </div>
     );
@@ -199,27 +169,30 @@ export default function MentoIntroduce() {
       <div className="p-6 text-center text-red-600">
         {(error as Error)?.message ?? "프로필 조회 실패"}
         <div className="mt-3 flex justify-center">
-          <Button size="sm" variant="primary" onClick={() => refetch()}>
+          <button
+            className="rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700"
+            onClick={() => refetch()}
+            type="button">
             다시 시도
-          </Button>
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <main className="bg-white">
+    <main className="min-h-dvh bg-gradient-to-b from-white to-emerald-200">
       <div className="mx-auto w-full max-w-screen-sm space-y-10 px-4 pt-8 pb-10 sm:max-w-md md:max-w-lg">
         <h1 className="font-WooridaumB text-center">멘티들이 확인할 정보를 입력해주세요</h1>
 
         {/* 프로필 이미지 */}
         <section className="flex flex-col items-center gap-2">
           <label htmlFor="profile-upload" className="group cursor-pointer">
-            <div className="relative inline-block rounded-full bg-gradient-to-r from-blue-400 to-green-400 p-[3px]">
+            <div className="relative inline-block rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 p-[3px]">
               <img
                 src={profileImage}
                 alt="프로필 이미지"
-                className="h-32 w-32 rounded-full bg-white object-cover shadow-lg shadow-blue-100 transition-transform duration-200 group-hover:scale-105"
+                className="h-32 w-32 rounded-full bg-white object-cover shadow-lg shadow-emerald-100 transition-transform duration-200 group-hover:scale-105"
               />
               <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
                 <span className="text-sm font-semibold text-white">변경</span>
@@ -243,7 +216,7 @@ export default function MentoIntroduce() {
         {/* 소개글 */}
         <section className="flex flex-col gap-2">
           <p className="font-WooridaumB text-lg font-bold">소개글 입력</p>
-          <div className="flex h-80 max-w-[90vw] items-center justify-center overflow-hidden rounded border border-gray-200">
+          <div className="flex h-80 max-w-[90vw] items-center justify-center overflow-hidden rounded border border-gray-200 bg-white">
             <SimpleEditor value={profileContent} onChange={setProfileContent} />
           </div>
         </section>
@@ -277,17 +250,15 @@ export default function MentoIntroduce() {
 
         {/* 저장 */}
         <footer className="mt-6 flex w-full justify-center">
-          <Button
-            className="w-full cursor-pointer"
-            size="lg"
-            variant="primary"
-            onClick={handleSubmit}>
+          <button
+            className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700"
+            onClick={handleSubmit}
+            type="button">
             등록
-          </Button>
+          </button>
         </footer>
       </div>
 
-      {/* ★ 공통 모달 렌더 */}
       {isOpen && modalType ? (
         <CommonModal
           type={modalType}

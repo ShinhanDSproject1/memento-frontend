@@ -1,6 +1,9 @@
+// src/widgets/common/MentosCard.tsx
 import Button from "@/widgets/common/Button";
+import type React from "react";
 import { Link } from "react-router-dom";
 
+type Role = "mento" | "menti" | undefined;
 type MentosStatus = "completed" | "pending" | "mento" | "guest";
 
 type MentosCardProps = {
@@ -17,8 +20,10 @@ type MentosCardProps = {
   onDeleteClick?: () => void;
   refundDisabled?: boolean;
   reviewDisabled?: boolean;
-  reportDisabled?: boolean; // ✅ 추가됨
-  fixedHeight?: number;
+  reportDisabled?: boolean;
+  fixedHeight?: number; // 부모가 계산한 고정 높이
+  /** ✅ 추가: 화면 컨텍스트(멘토/멘티)에 따라 링크 등 분기 */
+  role?: Role;
 };
 
 const statusStyles: Record<MentosStatus, string> = {
@@ -47,11 +52,11 @@ export default function MentosCard(props: MentosCardProps) {
     imageUrl,
     refundDisabled,
     reviewDisabled,
-    reportDisabled, // ✅ 구조분해에도 추가
+    reportDisabled,
     fixedHeight,
+    role, // ✅ 추가
   } = props;
 
-  // 🔒 버튼 클릭 시 링크 이동 차단 + 상위로 버블링 차단
   const act = (fn?: () => void) => (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -72,7 +77,6 @@ export default function MentosCard(props: MentosCardProps) {
         const isReportDisabled = !!reportDisabled;
         return (
           <>
-            {/* 리뷰 버튼 */}
             <Button
               className={`text-xs ${isReviewDisabled ? "cursor-not-allowed opacity-70" : ""}`}
               variant="lightBlue"
@@ -83,8 +87,6 @@ export default function MentosCard(props: MentosCardProps) {
               title={isReviewDisabled ? "이미 리뷰를 작성했습니다" : "리뷰 작성"}>
               {isReviewDisabled ? "리뷰 완료" : "리뷰 작성"}
             </Button>
-
-            {/* 신고 버튼 */}
             <Button
               className={`text-xs ${isReportDisabled ? "cursor-not-allowed opacity-70" : ""}`}
               variant="danger"
@@ -129,23 +131,38 @@ export default function MentosCard(props: MentosCardProps) {
     }
   })();
 
+  // 내부 비율: md에서 이미지를 더 줄이고 정보 영역을 늘림
+  const hasActions = status === "completed" || status === "pending" || status === "mento";
+  const imageBoxH = hasActions ? "h-[64%] md:h-[55%]" : "h-[72%] md:h-[63%]";
+  const infoBoxH = hasActions ? "h-[36%] md:h-[45%]" : "h-[28%] md:h-[37%]";
+
+  // ✅ 역할에 따른 디테일 링크 분기 (필요시 동일 경로로 둘 수도 있음)
+
+  const detailPath = `/menti/mentos-detail/${mentosSeq}`;
+
+  const wrapperBase =
+    "mx-auto w-full max-w-[400px] snap-start overflow-hidden rounded-2xl bg-white/90 " +
+    "backdrop-blur-[1px] shadow-[0_6px_18px_-8px_rgba(2,6,23,0.20)] ring-1 ring-slate-200 " +
+    "transition-transform active:scale-[0.997] focus-within:ring-0 content-visibility-auto will-change-transform";
+
+  const wrapperHeightClass = fixedHeight
+    ? "[height:var(--card-h)] md:[height:calc(var(--card-h)*0.88)]"
+    : "";
+
   return (
     <div
-      className={[
-        "mx-auto w-full max-w-[400px] snap-start",
-        "overflow-hidden rounded-2xl bg-white/90 backdrop-blur-[1px]",
-        "shadow-[0_6px_18px_-8px_rgba(2,6,23,0.20)] ring-1 ring-slate-200",
-        "transition-transform active:scale-[0.997]",
-        "focus-within:ring-0",
-        "content-visibility-auto will-change-transform",
-      ].join(" ")}
-      style={fixedHeight ? ({ height: `${fixedHeight}px` } as React.CSSProperties) : undefined}>
+      className={`${wrapperBase} ${wrapperHeightClass}`}
+      style={
+        fixedHeight
+          ? ({ ["--card-h" as any]: `${fixedHeight}px` } as React.CSSProperties)
+          : undefined
+      }>
       <Link
-        to={`/menti/mentos-detail/${mentosSeq}`}
+        to={detailPath}
         className="block h-full outline-none focus-visible:outline-none"
         style={{ WebkitTapHighlightColor: "transparent" }}>
         {/* 썸네일 */}
-        <div className="relative h-[72%] overflow-hidden bg-slate-100">
+        <div className={`relative ${imageBoxH} overflow-hidden bg-slate-100`}>
           <img
             className="h-full w-full object-cover"
             src={imageUrl || "https://picsum.photos/seed/picsum/400/240"}
@@ -165,13 +182,13 @@ export default function MentosCard(props: MentosCardProps) {
         </div>
 
         {/* 정보 */}
-        <div className="flex h-[28%] flex-col justify-between px-3.5 py-3">
+        <div className={`flex ${infoBoxH} flex-col justify-between px-3.5 py-3`}>
           <h3 className="line-clamp-2 text-[14px] leading-snug font-semibold tracking-[-0.2px] text-slate-900">
             {title}
           </h3>
 
           <div className="mt-2 flex items-center justify-between">
-            <div className="flex items-center text-slate-500">
+            <div className="flex min-w-0 items-center text-slate-500">
               <svg
                 className="mr-1.5 h-4 w-4 flex-shrink-0"
                 viewBox="0 0 24 24"
@@ -190,7 +207,7 @@ export default function MentosCard(props: MentosCardProps) {
                   d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              <span className="truncate text-[12px]"> {location} </span>
+              <span className="truncate text-[12px]">{location}</span>
             </div>
             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-semibold text-slate-900">
               ₩{formattedPrice}
