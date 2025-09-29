@@ -1,4 +1,7 @@
 // src/app/routes/index.tsx
+import RecommendChatPage from "@/pages/chat/RecommendChatPage";
+import DelayedFallback from "@/shared/ui/DelayedFallBack";
+import LoadingBar from "@/shared/ui/LoadingBar";
 import React, { Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "./layouts/RootLayout";
@@ -12,7 +15,7 @@ const Error404 = React.lazy(() => import("@/pages/home/Error404"));
 const Error500 = React.lazy(() => import("@/pages/home/Error500"));
 
 // [ Home ]
-const Home = React.lazy(() => import("@/pages/home/Home"));
+const Home = React.lazy(() => import("@/pages/home/Home2"));
 
 // [ auth ]
 const Login = React.lazy(() => import("@/pages/login/Login"));
@@ -57,7 +60,14 @@ const ChatBot = React.lazy(() => import("@/pages/chat/ChatBot"));
 const RecommendPage = React.lazy(() => import("@/pages/chat/RecommendPage"));
 
 const withSuspense = (el: React.ReactNode) => (
-  <Suspense fallback={<div className="p-6 text-sm text-gray-500">로딩 중…</div>}>{el}</Suspense>
+  <Suspense
+    fallback={
+      <DelayedFallback delay={1000}>
+        <LoadingBar variant="inline" label="페이지 로딩 중…" />
+      </DelayedFallback>
+    }>
+    {el}
+  </Suspense>
 );
 
 export const router = createBrowserRouter([
@@ -77,6 +87,7 @@ export const router = createBrowserRouter([
         element: withSuspense(<AppLayout />),
         children: [
           // ----- (1) 공개 라우트 -----
+          { path: "/recommend", element: withSuspense(<RecommendChatPage />) },
           { path: "/login", element: withSuspense(<Login />) },
           { path: "/signup", element: withSuspense(<SignupSelect />) },
           { path: "/signup/mentor", element: withSuspense(<MentorSignup />) },

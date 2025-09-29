@@ -100,7 +100,7 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false,
         },
-        
+
         // Stomp WebSocket 프록시 규칙
         "/ws-stomp": {
           target: "https://memento.shinhanacademy.co.kr",
@@ -108,7 +108,7 @@ export default defineConfig(({ mode }) => {
           secure: true,
           ws: true,
         },
-        
+
         // Python 서버 프록시 규칙
         "/py": {
           target: "http://192.168.0.180:8001",

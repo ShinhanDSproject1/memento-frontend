@@ -307,7 +307,6 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
           reviewContent: content,
         });
         closeModal();
-
         if (res.code === 1000) {
           await queryClient.invalidateQueries({ queryKey: MY_MENTOS_QK });
           await mentee.refetch();

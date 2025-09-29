@@ -1,5 +1,5 @@
-import { http } from "@api/https";
 import { getAccessToken } from "@/shared/auth/token";
+import { http } from "@api/https";
 
 export async function initMentosPayment(body: {
   mentosSeq: number;
@@ -10,10 +10,11 @@ export async function initMentosPayment(body: {
   return data?.result ?? data;
 }
 
-export async function confirmPayment(
-  query: { orderId: string; paymentKey: string; amount: number },
-  body: { mentosSeq: number; mentosAt: string; mentosTime: string },
-) {
+export async function confirmPayment(query: {
+  orderId: string;
+  paymentKey: string;
+  amount: number;
+}) {
   const config = {
     params: {
       orderId: query.orderId,
@@ -26,18 +27,19 @@ export async function confirmPayment(
     withCredentials: true,
   } as const;
 
-  const { data } = await http.post("/payments/success", body, config);
+  // body는 필요 없음 → 서버가 @RequestParam으로만 받음
+  const { data } = await http.post("/payments/success", null, config);
 
   console.log("[confirm] data:", data);
 
   const pseq =
     data?.result?.paymentsSeq ?? data?.paymentsSeq ?? data?.result?.paymentSeq ?? data?.paymentSeq;
 
-  console.log("[confirm] pseq saved:", pseq, "mentosSeq:", body.mentosSeq);
+  console.log("[confirm] pseq saved:", pseq);
 
   if (pseq) {
-    // 멘토스별로 저장 (환불 버튼 눌렀을 때 쓸 수 있도록)
-    localStorage.setItem(`paymentSeqByMentos:${body.mentosSeq}`, String(pseq));
+    // 환불 버튼 눌렀을 때 쓸 수 있도록 localStorage에 저장
+    localStorage.setItem(`paymentSeq:${query.orderId}`, String(pseq));
   }
   return data;
 }

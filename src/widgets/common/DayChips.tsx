@@ -64,8 +64,8 @@ export default function DayChips({ value, defaultDays = [], onChange }: DayChips
             onClick={() => toggle(d)}
             className={`h-12 w-12 rounded-full border shadow transition-all ${
               active
-                ? "!border-[#005EF9] !bg-[#005EF9] !text-white"
-                : "border-[#E5E7ED] bg-white text-[#667085] hover:bg-[#F2F5FA]"
+                ? "!border-emerald-600 !bg-emerald-600 !text-white"
+                : "border-[#E5E7ED] bg-white text-[#667085] hover:bg-emerald-50"
             }`}
             aria-pressed={active}
             aria-label={d}>

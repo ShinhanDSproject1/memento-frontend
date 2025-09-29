@@ -1,11 +1,11 @@
 import logo from "@assets/images/logo/memento-logo.svg";
 // import { set } from "date-fns";
+import { http } from "@api/https";
 import { ko } from "date-fns/locale";
 import { useMemo, useState, type FormEvent } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link, useNavigate } from "react-router-dom";
-import { http } from "@api/https";
 
 export default function MenteeSignup() {
   const navigate = useNavigate();
@@ -80,7 +80,7 @@ export default function MenteeSignup() {
     }
   };
   return (
-    <main className="mx-auto w-full max-w-md px-5 py-8">
+    <main className="mx-auto w-full max-w-md px-5 py-8 md:h-185">
       {/* 로고 + 인사 */}
       <div className="mb-5 text-center">
         <div className="flex items-center justify-center">

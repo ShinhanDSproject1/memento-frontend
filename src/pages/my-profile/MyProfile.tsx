@@ -130,6 +130,12 @@ export default function MyProfile() {
     }
   };
 
+  //
+  const handleInfoCancel = () => {
+    setEditInfo(false);
+    setInfoDraft({ current: "", next: "", confirm: "" });
+  };
+
   const handleWithdrawClick = () => {
     openModal("withdrawConfirm"); // ✅ 확인 모달
   };
@@ -188,7 +194,7 @@ export default function MyProfile() {
   /* ── view ───────────────────────────── */
   return (
     <div className="font-WooridaumB flex min-h-screen justify-center bg-[#f5f6f8] antialiased">
-      <main className="min-h-dvh w-full bg-white px-4 py-8 shadow">
+      <main className="min-h-dvh w-full bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1] px-4 py-8 shadow">
         <PageContainer>
           {/* 내 프로필 */}
           <h2 className={headingCls}>내 프로필</h2>
@@ -307,7 +313,13 @@ export default function MyProfile() {
                         )}
                     </div>
                   </FieldRow>
-                  <div className="mt-1 flex justify-end">
+                  <div className="mt-1 flex justify-end gap-x-2">
+                    <button
+                      className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 md:text-base"
+                      onClick={handleInfoCancel}
+                      type="button">
+                      취소
+                    </button>
                     <button
                       className={[
                         "cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold text-white md:text-base",
@@ -327,9 +339,9 @@ export default function MyProfile() {
           </section>
 
           {/* 계정 탈퇴 */}
-          <div className="mb-12 flex w-full justify-end">
+          <div className="flex w-full justify-end">
             <button
-              className="w-fit cursor-pointer rounded-lg py-15 text-sm font-semibold text-black underline"
+              className="w-fit cursor-pointer rounded-lg text-sm font-semibold text-black underline"
               type="button"
               onClick={handleWithdrawClick}>
               계정 탈퇴

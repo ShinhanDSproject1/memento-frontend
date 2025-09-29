@@ -72,9 +72,9 @@ export default function LocationField({ value, onChange }: LocationFieldProps) {
                 emit(z, a, detail, b);
               })
             }
-            className={`font-WooridaumB absolute top-1/2 right-2 h-10 w-[5.5rem] -translate-y-1/2 cursor-pointer rounded-lg text-sm ${
+            className={`font-WooridaumB absolute top-1/2 right-2 h-10 w-[5.5rem] -translate-y-1/2 cursor-pointer rounded-lg text-sm transition-colors ${
               loaded
-                ? "bg-[#005EF9] text-white hover:brightness-95"
+                ? "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-300"
                 : "cursor-not-allowed bg-slate-200 text-white"
             }`}>
             주소 검색
