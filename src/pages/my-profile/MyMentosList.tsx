@@ -34,13 +34,19 @@ interface MyMentosListProps {
 
 /* ------------------------------ Constants ------------------------------ */
 const MY_MENTOS_QK = ["my-mentos-list"] as const; // 멘티 내역용
-const GAP_PX = 24; // 카드 간격
-const PAGE_PADDING_BOTTOM = 24; // 페이지 하단 패딩
+const GAP_PX = 24; // (이제 안 써도 OK, 남겨도 무방)
+const PAGE_PADDING_BOTTOM = 0; // ← 화면 꽉 채우려면 0
+const PAGE_GAP = 16; // ← 페이지(섹션) 사이 간격(px)
 
 // 🔑 멘토 목록 쿼리키(훅과 동일한 limit 사용)
 const MENTO_LIMIT = 5;
 const MENTO_LIST_QK = (limit: number) => ["mentoMentos", limit] as const;
 
+function chunk<T>(arr: T[], size: number) {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
 /* ------------------------------ Helpers ------------------------------ */
 // 낙관적 삭제: 멘토 목록 캐시에서 항목 제거
 function removeMentosFromCache(qc: ReturnType<typeof useQueryClient>, mentosSeq: number) {
@@ -107,7 +113,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [listH, setListH] = useState(0);
-  const [cardH, setCardH] = useState(0);
+  // const [cardH, setCardH] = useState(0);
 
   useEffect(() => {
     const calc = () => {
@@ -118,7 +124,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
       const viewportH = window.innerHeight;
       const available = Math.max(0, viewportH - titleBottom - PAGE_PADDING_BOTTOM);
       setListH(available);
-      setCardH(Math.floor((available - GAP_PX) / 2));
+      // setCardH(Math.floor((available - GAP_PX) / 2));
     };
     const raf = requestAnimationFrame(calc);
     window.addEventListener("resize", calc);
@@ -139,7 +145,6 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
   // 리뷰 작성 임시 상태(모달 내부에서 onChange로 업데이트)
   const reviewDraftRef = useRef<{ rating: number; content: string }>({ rating: 0, content: "" });
 
-  // ✅ 테마 (멘토=연녹색, 멘티=파랑)
   const theme =
     role === "mento"
       ? {
@@ -148,7 +153,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
           button: "bg-emerald-600 hover:bg-emerald-700 text-white",
         }
       : {
-          bg: "bg-gradient-to-b from-[#F0F7FF] to-[#c2d2f1]",
+          bg: "bg-[#F0F7FF]",
           title: "text-[#1E3A8A]",
           button: "bg-[#005EF9] hover:bg-[#0045c9] text-white",
         };
@@ -170,6 +175,8 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
   }, [mentee.data]);
 
   const menteeEmpty = !mentee.isLoading && menteeList.length === 0;
+  const menteePages = useMemo(() => chunk(menteeList, 2), [menteeList]);
+
   const menteeNoContent =
     (!mentee.isLoading && isEmptyPages(mentee.data)) ||
     (mentee.isError && isNoContentError(mentee.error));
@@ -352,7 +359,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
         {/* Scroll area */}
         <div
           ref={scrollRef}
-          className="snap-y snap-mandatory overflow-y-auto px-4 pb-6"
+          className="snap-y snap-mandatory overflow-y-auto px-4"
           style={listH ? { height: `${listH}px` } : undefined}>
           {/* Loading / Empty */}
           {(role === "mento" ? mentor.isLoading : mentee.isLoading) && (
@@ -439,6 +446,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                   );
                 })}
           </section>
+
 
           {/* Infinite loader */}
           {(role === "mento" ? mentor.hasNextPage : mentee.hasNextPage) && (
