@@ -34,13 +34,19 @@ interface MyMentosListProps {
 
 /* ------------------------------ Constants ------------------------------ */
 const MY_MENTOS_QK = ["my-mentos-list"] as const; // 멘티 내역용
-const GAP_PX = 24; // 카드 간격
-const PAGE_PADDING_BOTTOM = 24; // 페이지 하단 패딩
+const GAP_PX = 24; // (이제 안 써도 OK, 남겨도 무방)
+const PAGE_PADDING_BOTTOM = 0; // ← 화면 꽉 채우려면 0
+const PAGE_GAP = 16; // ← 페이지(섹션) 사이 간격(px)
 
 // 🔑 멘토 목록 쿼리키(훅과 동일한 limit 사용)
 const MENTO_LIMIT = 5;
 const MENTO_LIST_QK = (limit: number) => ["mentoMentos", limit] as const;
 
+function chunk<T>(arr: T[], size: number) {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
 /* ------------------------------ Helpers ------------------------------ */
 // 낙관적 삭제: 멘토 목록 캐시에서 항목 제거
 function removeMentosFromCache(qc: ReturnType<typeof useQueryClient>, mentosSeq: number) {
@@ -107,7 +113,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [listH, setListH] = useState(0);
-  const [cardH, setCardH] = useState(0);
+  // const [cardH, setCardH] = useState(0);
 
   useEffect(() => {
     const calc = () => {
@@ -118,7 +124,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
       const viewportH = window.innerHeight;
       const available = Math.max(0, viewportH - titleBottom - PAGE_PADDING_BOTTOM);
       setListH(available);
-      setCardH(Math.floor((available - GAP_PX) / 2));
+      // setCardH(Math.floor((available - GAP_PX) / 2));
     };
     const raf = requestAnimationFrame(calc);
     window.addEventListener("resize", calc);
@@ -139,7 +145,6 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
   // 리뷰 작성 임시 상태(모달 내부에서 onChange로 업데이트)
   const reviewDraftRef = useRef<{ rating: number; content: string }>({ rating: 0, content: "" });
 
-  // ✅ 테마 (멘토=연녹색, 멘티=파랑)
   const theme =
     role === "mento"
       ? {
@@ -148,7 +153,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
           button: "bg-emerald-600 hover:bg-emerald-700 text-white",
         }
       : {
-          bg: "bg-gradient-to-b from-[#F0F7FF] to-[#c2d2f1]",
+          bg: "bg-[#F0F7FF]",
           title: "text-[#1E3A8A]",
           button: "bg-[#005EF9] hover:bg-[#0045c9] text-white",
         };
@@ -170,6 +175,8 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
   }, [mentee.data]);
 
   const menteeEmpty = !mentee.isLoading && menteeList.length === 0;
+  const menteePages = useMemo(() => chunk(menteeList, 2), [menteeList]);
+
   const menteeNoContent =
     (!mentee.isLoading && isEmptyPages(mentee.data)) ||
     (mentee.isError && isNoContentError(mentee.error));
@@ -307,7 +314,6 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
           reviewContent: content,
         });
         closeModal();
-
         if (res.code === 1000) {
           await queryClient.invalidateQueries({ queryKey: MY_MENTOS_QK });
           await mentee.refetch();
@@ -353,7 +359,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
         {/* Scroll area */}
         <div
           ref={scrollRef}
-          className="snap-y snap-mandatory overflow-y-auto px-4 pb-6"
+          className="snap-y snap-mandatory overflow-y-auto px-4"
           style={listH ? { height: `${listH}px` } : undefined}>
           {/* Loading / Empty */}
           {(role === "mento" ? mentor.isLoading : mentee.isLoading) && (
@@ -370,73 +376,100 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
           )}
 
           {/* List */}
-          <section className="flex flex-col gap-6 pt-1">
-            {role === "mento"
-              ? mentorList.map((item) => (
-                  <MentosCard
-                    key={item.mentosSeq}
-                    mentosSeq={item.mentosSeq}
-                    title={item.mentosTitle}
-                    price={item.price}
-                    location={item.region}
-                    status="mento"
-                    role="mento"
-                    imageUrl={item.mentosImage}
-                    // ▶ 버튼 → 모달 오픈
-                    onUpdateClick={() => navigate(`/edit/${item.mentosSeq}`)}
-                    onDeleteClick={() => openModal("deleteMentos", { mentosSeq: item.mentosSeq })}
-                    fixedHeight={cardH}
-                  />
-                ))
-              : menteeList.map((item: MyMentosItem) => {
-                  const dateLabel = fmtDateTime(item.mentosAt, item.mentosTime);
-                  const locationLabel = dateLabel
-                    ? `${dateLabel}${item.region ? ` · ${item.region}` : ""}`
-                    : item.region;
+          <div className="space-y-4">
+            {" "}
+            {/* PAGE_GAP(16px)과 맞춤 */}
+            {(role === "mento" ? mentorPages : menteePages).map((pair, idx) => (
+              <section
+                key={idx}
+                className="snap-start"
+                style={{ height: `calc(${listH}px - ${PAGE_GAP}px)` }} // 간격 보정 포함, 한 화면 꽉 채움
+              >
+                <div className="flex h-full flex-col gap-6">
+                  {pair.map((item) => {
+                    // 공통 props 정리
+                    const common = {
+                      mentosSeq: item.mentosSeq,
+                      title: item.mentosTitle,
+                      price: item.price,
+                      imageUrl: item.mentosImage,
+                    };
 
-                  const status = item.reviewCompleted ? "completed" : "pending";
-                  return (
-                    <MentosCard
-                      key={item.mentosSeq}
-                      mentosSeq={item.mentosSeq}
-                      title={item.mentosTitle}
-                      price={item.price}
-                      location={locationLabel}
-                      imageUrl={item.mentosImage}
-                      status={status as any}
-                      role="menti"
-                      onReviewClick={() =>
-                        openModal("reviewMentos", {
-                          reservationSeq: item.reservationSeq,
-                          initialRating: 3,
-                          initialContent: "",
-                          onRatingChange: (r: number) => (reviewDraftRef.current.rating = r),
-                          onContentChange: (t: string) => (reviewDraftRef.current.content = t),
-                        } as any)
-                      }
-                      onRefundClick={() =>
-                        item.reservationSeq
-                          ? openModal("refundMentos", { reservationSeq: item.reservationSeq })
-                          : openModal("withdrawFailed", {
-                              message: "해당 항목에는 예약 내역이 없습니다.",
-                            })
-                      }
-                      onReportClick={() =>
-                        item.reportCompleted
-                          ? openModal("withdrawFailed", { message: "이미 신고한 항목입니다." })
-                          : openModal("reportMentos", {
-                              mentosSeq: item.mentosSeq,
-                              idemKey: crypto.randomUUID(),
-                            })
-                      }
-                      refundDisabled={!item.reservationSeq}
-                      reviewDisabled={item.reviewCompleted}
-                      reportDisabled={!!item.reportCompleted}
-                      fixedHeight={cardH}
-                    />
-                  );
-                })}
-          </section>
+                    return (
+                      <div key={item.mentosSeq} className="min-h-0 flex-1 [&>*]:h-full">
+                        {role === "mento" ? (
+                          <MentosCard
+                            {...common}
+                            location={item.region}
+                            status="mento"
+                            role="mento"
+                            onUpdateClick={() => navigate(`/edit/${item.mentosSeq}`)}
+                            onDeleteClick={() =>
+                              openModal("deleteMentos", { mentosSeq: item.mentosSeq })
+                            }
+                            /* fixedHeight 제거 */
+                          />
+                        ) : (
+                          <MentosCard
+                            {...common}
+                            location={(() => {
+                              const d = fmtDateTime(
+                                (item as MyMentosItem).mentosAt,
+                                (item as MyMentosItem).mentosTime,
+                              );
+                              const reg = (item as MyMentosItem).region;
+                              return d ? `${d}${reg ? ` · ${reg}` : ""}` : reg;
+                            })()}
+                            status={
+                              (item as MyMentosItem).progressStatus === "진행 완료"
+                                ? "completed"
+                                : "pending"
+                            }
+                            role="menti"
+                            onReviewClick={() =>
+                              openModal("reviewMentos", {
+                                reservationSeq: (item as MyMentosItem).reservationSeq,
+                                initialRating: 3,
+                                initialContent: "",
+                                onRatingChange: (r: number) => (reviewDraftRef.current.rating = r),
+                                onContentChange: (t: string) =>
+                                  (reviewDraftRef.current.content = t),
+                              } as any)
+                            }
+                            onRefundClick={() =>
+                              (item as MyMentosItem).reservationSeq
+                                ? openModal("refundMentos", {
+                                    reservationSeq: (item as MyMentosItem).reservationSeq,
+                                  })
+                                : openModal("withdrawFailed", {
+                                    message: "해당 항목에는 예약 내역이 없습니다.",
+                                  })
+                            }
+                            onReportClick={() =>
+                              (item as MyMentosItem).reportCompleted
+                                ? openModal("withdrawFailed", {
+                                    message: "이미 신고한 항목입니다.",
+                                  })
+                                : openModal("reportMentos", {
+                                    mentosSeq: item.mentosSeq,
+                                    idemKey: crypto.randomUUID(),
+                                  })
+                            }
+                            refundDisabled={!(item as MyMentosItem).reservationSeq}
+                            reviewDisabled={(item as MyMentosItem).reviewCompleted}
+                            reportDisabled={!!(item as MyMentosItem).reportCompleted}
+                            /* fixedHeight 제거 */
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                  {/* 홀수로 끝나면 빈칸 채워 높이 균형 유지 */}
+                  {pair.length === 1 && <div className="min-h-0 flex-1" />}
+                </div>
+              </section>
+            ))}
+          </div>
 
           {/* Infinite loader */}
           {(role === "mento" ? mentor.hasNextPage : mentee.hasNextPage) && (
