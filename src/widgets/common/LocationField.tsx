@@ -34,65 +34,69 @@ export default function LocationField({ value, onChange }: LocationFieldProps) {
     onChange?.({ zonecode: z, address: a, detail: d, bname: b });
   };
 
+  const handleOpenPostcode = () => {
+    openPostcode((data) => {
+      const z = data.zonecode || "";
+      const a = data.roadAddress || data.jibunAddress || "";
+      const b = data.bname || undefined;
+      setZonecode(z);
+      setAddress(a);
+      setBname(b);
+      // 검색 후 상세주소는 초기화해주는 것이 사용자 경험에 좋습니다.
+      setDetail("");
+      emit(z, a, "", b);
+    });
+  };
+
+  const handleDetailChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const d = e.target.value;
+    setDetail(d);
+    emit(zonecode, address, d, bname);
+  };
+
   return (
-    <div className="grid grid-cols-1 gap-3">
-      {/* 우편번호 + 주소 (div로 Input처럼 보이게) */}
-      <div className="flex items-center gap-2">
-        <div className="font-WooridaumL flex h-12 w-28 min-w-[7rem] items-center rounded-[14px] border border-[#E5E7ED] bg-white px-3 text-[15px] text-[#0F172A]">
-          {zonecode ? (
-            <span className="tracking-[0.02em]">{zonecode}</span>
-          ) : (
-            <span className="text-[#9AA2AE]">우편번호</span>
-          )}
-        </div>
-
-        <div className="relative min-w-0 flex-1">
-          <div className="font-WooridaumL flex h-12 w-full min-w-0 items-center overflow-hidden rounded-[14px] border border-[#E5E7ED] bg-white pr-[7.5rem] pl-4 text-[15px] text-[#0F172A] shadow-sm">
-            {address ? (
-              <span className="block w-full truncate" title={address}>
-                {address}
-              </span>
-            ) : (
-              <span className="text-[#9AA2AE]">도로명/지번 주소</span>
-            )}
-          </div>
-
-          <button
-            type="button"
-            disabled={!loaded}
-            aria-disabled={!loaded}
-            onClick={() =>
-              openPostcode((data) => {
-                const z = data.zonecode || "";
-                const a = data.roadAddress || data.jibunAddress || "";
-                const b = data.bname || undefined;
-                setZonecode(z);
-                setAddress(a);
-                setBname(b);
-                emit(z, a, detail, b);
-              })
-            }
-            className={`font-WooridaumB absolute top-1/2 right-2 h-10 w-[5.5rem] -translate-y-1/2 cursor-pointer rounded-lg text-sm transition-colors ${
-              loaded
-                ? "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-300"
-                : "cursor-not-allowed bg-slate-200 text-white"
-            }`}>
-            주소 검색
-          </button>
-        </div>
+    <div className="flex w-full flex-col gap-3">
+      {/* ✨ 1. flex-1을 사용하여 입력창이 남은 공간을 모두 채우도록 수정 */}
+      <div className="flex w-full items-center gap-2">
+        <input
+          type="text"
+          value={zonecode}
+          readOnly
+          placeholder="우편번호"
+          className="font-WooridaumL h-12 flex-1 rounded-[14px] border border-[#E5E7ED] bg-white px-4 text-[15px] text-[#0F172A] placeholder:text-[#9AA2AE] focus:ring-2 focus:ring-[#005EF9]/60 focus:outline-none"
+        />
+        <button
+          type="button"
+          disabled={!loaded}
+          aria-disabled={!loaded}
+          onClick={handleOpenPostcode}
+          className={`font-WooridaumB h-12 w-28 flex-shrink-0 cursor-pointer rounded-lg text-sm transition-colors ${
+            loaded
+              ? "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-300"
+              : "cursor-not-allowed bg-slate-200 text-white"
+          }`}>
+          주소 검색
+        </button>
       </div>
 
-      {/* 상세주소 (사용자 입력) */}
+      {/* ✨ 2. 아래 입력창들은 w-full을 유지하여 첫 번째 줄과 길이가 일치하게 됩니다. */}
       <input
-        value={detail}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-          const d = e.target.value;
-          setDetail(d);
-          emit(zonecode, address, d, bname);
-        }}
-        placeholder="상세 주소"
+        type="text"
+        value={address}
+        readOnly
+        placeholder="도로명/지번 주소"
         className="font-WooridaumL h-12 w-full rounded-[14px] border border-[#E5E7ED] bg-white px-4 text-[15px] text-[#0F172A] placeholder:text-[#9AA2AE] focus:ring-2 focus:ring-[#005EF9]/60 focus:outline-none"
       />
+
+      {/* ✨ 3. 주소가 있을 때만 상세주소 입력창을 보여줍니다. */}
+      {address && (
+        <input
+          value={detail}
+          onChange={handleDetailChange}
+          placeholder="상세 주소"
+          className="font-WooridaumL h-12 w-full rounded-[14px] border border-[#E5E7ED] bg-white px-4 text-[15px] text-[#0F172A] placeholder:text-[#9AA2AE] focus:ring-2 focus:ring-[#005EF9]/60 focus:outline-none"
+        />
+      )}
     </div>
   );
 }

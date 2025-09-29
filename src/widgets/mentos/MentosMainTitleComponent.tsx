@@ -1,6 +1,7 @@
 // src/components/MentosMainTitleComponent.tsx
 export interface MentosMainTitleComponentProps {
   mainTitle: string;
+  className?: string;
 }
 
 export default function MentosMainTitleComponent({ mainTitle }: MentosMainTitleComponentProps) {

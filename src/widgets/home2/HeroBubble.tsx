@@ -1,6 +1,7 @@
 // src/widgets/home2/HeroBubble.tsx
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 type Role = "mentee" | "mentor";
 
@@ -19,6 +20,8 @@ export function HeroBubble({ text, highlight, rotateTexts, intervalMs = 30_000, 
   const [done, setDone] = useState(prefersReducedMotion);
   const timer = useRef<number | null>(null);
   const i = useRef(0);
+  const navigate = useNavigate();
+  const location = useLocation(); // ✅ 현재 경로 확인
 
   useEffect(() => {
     if (!rotateTexts || rotateTexts.length === 0) {
@@ -69,15 +72,12 @@ export function HeroBubble({ text, highlight, rotateTexts, intervalMs = 30_000, 
     };
   }, [currentText, prefersReducedMotion]);
 
-  // ✅ 유저네임 + 캐릭터이름 모두 하이라이트
+  // ✅ 유저네임 + 캐릭터이름 하이라이트
   const renderWithHighlight = (content: string) => {
     const highlightColor = role === "mentor" ? "text-teal-500" : "text-blue-600";
-
-    // 캐릭터 이름도 포함해서 처리 (토리/모리)
     const targetWords = [highlight, "토리", "모리"].filter(Boolean) as string[];
 
     let result: (string | JSX.Element)[] = [content];
-
     targetWords.forEach((word) => {
       result = result.flatMap((chunk) => {
         if (typeof chunk !== "string") return [chunk];
@@ -93,16 +93,16 @@ export function HeroBubble({ text, highlight, rotateTexts, intervalMs = 30_000, 
         );
       });
     });
-
     return result;
   };
 
   return (
     <motion.div
-      className="h-[132px] w-full overflow-hidden rounded-2xl border border-blue-200 bg-white/95 px-4 py-10 shadow-md backdrop-blur"
+      className="relative h-[132px] w-full overflow-hidden rounded-2xl border border-blue-200 bg-white/95 px-4 py-10 shadow-md backdrop-blur"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
+      {/* 말풍선 텍스트 */}
       <p className="text-center text-[15px] leading-6 whitespace-pre-line text-[#23272E]">
         {renderWithHighlight(typed)}
         {!done && (
@@ -122,6 +122,16 @@ export function HeroBubble({ text, highlight, rotateTexts, intervalMs = 30_000, 
           />
         )}
       </p>
+
+      {/* 대화하기 버튼 (말풍선 오른쪽 하단) → /chat 페이지에서는 숨김 */}
+      {location.pathname !== "/recommend" && (
+        <button
+          type="button"
+          onClick={() => navigate("/recommend")}
+          className="absolute right-3 bottom-3 inline-flex items-center justify-center gap-1.5 rounded-full border border-blue-300 bg-blue-400 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:border-blue-400 hover:bg-blue-500 hover:shadow-md">
+          대화하기
+        </button>
+      )}
     </motion.div>
   );
 }

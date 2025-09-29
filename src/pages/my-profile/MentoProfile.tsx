@@ -128,6 +128,11 @@ export default function MentorProfile() {
     }
   };
 
+  const handleInfoCancel = () => {
+    setEditInfo(false);
+    setInfoDraft({ current: "", next: "", confirm: "" });
+  };
+
   const handleInfoSave = async () => {
     if (!canSubmit) return;
 
@@ -343,7 +348,13 @@ export default function MentorProfile() {
                         )}
                     </div>
                   </FieldRow>
-                  <div className="mt-1 flex justify-end">
+                  <div className="mt-1 flex justify-end gap-x-2">
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 md:text-base"
+                      onClick={handleInfoCancel}>
+                      취소
+                    </button>
                     <button
                       type="button"
                       className={[
