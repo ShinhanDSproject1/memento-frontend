@@ -1,5 +1,4 @@
 // src/pages/chat/RecommendChatPage.tsx
-import { CategoryButtonGroup } from "@/widgets/home2/CategoryButton";
 import { CharacterFigure } from "@/widgets/home2/CharacterFigure";
 import { HeroBubble } from "@/widgets/home2/HeroBubble";
 import { LoginSheet } from "@/widgets/home2/LoginSheet";
@@ -60,7 +59,7 @@ export default function RecommendChatPage() {
     const ac = new AbortController();
     (async () => {
       try {
-        const url = apiUrl(`/ai/chatbot/?member_seq=${encodeURIComponent(memberUUID)}`);
+        const url = apiUrl(`/ai/chatbot/${encodeURIComponent(memberUUID)}`);
         const res = await fetch(url, {
           headers: { Accept: "application/json" },
           signal: ac.signal,
@@ -126,12 +125,8 @@ export default function RecommendChatPage() {
   };
 
   return (
-    <main className="relative h-screen w-full bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1] px-4 pt-5 md:h-190">
-      <section className="mx-auto w-full max-w-lg">
-        <CategoryButtonGroup />
-      </section>
-
-      <section className="mx-auto mt-10 flex w-full max-w-md flex-col items-center gap-4">
+    <main className="relative h-screen w-full px-4 pt-5 md:h-190">
+      <section className="mx-auto flex w-full max-w-md flex-col items-center gap-4">
         {/* ✅ HeroBubble에는 애니메이션된 텍스트를 표시 */}
         <HeroBubble text={displayedText} highlight={isLoggedIn ? memberName : undefined} />
         <CharacterFigure glowed={isLoggedIn} />
