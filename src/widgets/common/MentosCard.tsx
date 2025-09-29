@@ -9,7 +9,7 @@ type MentosCardProps = {
   price?: number;
   location?: string;
   status: MentosStatus;
-  approved: boolean;
+  approved?: boolean;
   imageUrl?: string;
   onReportClick?: () => void;
   onReviewClick?: () => void;
@@ -131,6 +131,11 @@ export default function MentosCard({
         style={{ WebkitTapHighlightColor: "transparent" }}>
         {/* 썸네일: 72% (더 크게) */}
         <div className="relative h-[72%] overflow-hidden bg-slate-100">
+          {approved && (
+            <div className="absolute top-[20px] right-[-35px] z-10 flex h-[35px] w-[140px] rotate-45 items-center justify-center overflow-hidden bg-[#1161ff]">
+              <div className="font-WooridaumR text-center text-[16px] text-white">EXPERT</div>
+            </div>
+          )}
           <img
             className="h-full w-full object-cover"
             src={imageUrl || "https://picsum.photos/seed/picsum/400/240"}
