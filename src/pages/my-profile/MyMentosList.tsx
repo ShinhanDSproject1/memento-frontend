@@ -391,7 +391,6 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                     // ▶ 버튼 → 모달 오픈
                     onUpdateClick={() => navigate(`/edit/${item.mentosSeq}`)}
                     onDeleteClick={() => openModal("deleteMentos", { mentosSeq: item.mentosSeq })}
-                    fixedHeight={cardH}
                   />
                 ))
               : menteeList.map((item: MyMentosItem) => {
@@ -441,12 +440,10 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                       refundDisabled={!item.reservationSeq}
                       reviewDisabled={item.reviewCompleted} // ✅ 리뷰 여부는 여기서 처리
                       reportDisabled={!!item.reportCompleted}
-                      fixedHeight={cardH}
                     />
                   );
                 })}
           </section>
-
 
           {/* Infinite loader */}
           {(role === "mento" ? mentor.hasNextPage : mentee.hasNextPage) && (
