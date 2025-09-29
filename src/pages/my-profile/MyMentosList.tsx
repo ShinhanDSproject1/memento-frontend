@@ -428,8 +428,9 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                     ? `${dateLabel}${item.region ? ` · ${item.region}` : ""}`
                     : item.region;
 
-                  // 진행 상태(간단 추정): 리뷰 가능이면 completed, 아니면 pending
-                  const status = item.reviewCompleted ? "completed" : "pending";
+                  // ✅ 서버 progressStatus 기준으로 상태 결정
+                  const status: "pending" | "completed" =
+                    item.progressStatus === "진행 완료" ? "completed" : "pending";
 
                   return (
                     <MentosCard
@@ -439,7 +440,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                       price={item.price}
                       location={locationLabel}
                       imageUrl={item.mentosImage}
-                      status={status as any}
+                      status={status}
                       onReviewClick={() => onReviewClick(item.reservationSeq, item.reviewCompleted)}
                       onRefundClick={() =>
                         item.reservationSeq
