@@ -60,7 +60,7 @@ export default function RecommendChatPage() {
     const ac = new AbortController();
     (async () => {
       try {
-        const url = apiUrl(`/ai/chatbot/?member_seq=${encodeURIComponent(memberUUID)}`);
+        const url = apiUrl(`/ai/chatbot/${encodeURIComponent(memberUUID)}`);
         const res = await fetch(url, {
           headers: { Accept: "application/json" },
           signal: ac.signal,
