@@ -1,11 +1,9 @@
 // src/components/MainHeader.tsx
+import { useAuth } from "@/entities/auth";
 import loginIcon from "@assets/icons/icon-login.svg";
-import homeIcon from "@assets/icons/icon-move-home.svg";
 import logo from "@assets/images/logo/memento-logo.svg";
-import { useAuth } from "@entities/auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 export interface MainHeaderProps {
   onClickLogin?: () => void;
   onClickHome?: () => void;
@@ -23,7 +21,7 @@ export default function MainHeader({ onClickHome }: MainHeaderProps) {
       await logout();
       setLogoutOpen(true); // ← 모달 오픈
     } else {
-      navigate("/login");
+      navigate("/");
     }
   };
 
@@ -48,13 +46,13 @@ export default function MainHeader({ onClickHome }: MainHeaderProps) {
             className="h-auto w-6 cursor-pointer transition duration-200 hover:brightness-60"
           />
         </button>
-        <button type="button" onClick={goHome} aria-label="go home">
+        {/* <button type="button" onClick={goHome} aria-label="go home">
           <img
             src={homeIcon}
             alt="homeIcon"
             className="h-auto w-6 cursor-pointer transition duration-200 hover:brightness-60"
           />
-        </button>
+        </button> */}
       </div>
 
       {/* ✅ 로그아웃 완료 모달 */}

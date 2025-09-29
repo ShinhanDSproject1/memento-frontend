@@ -1,6 +1,9 @@
+// src/widgets/common/MentosCard.tsx
 import Button from "@/widgets/common/Button";
+import type React from "react";
 import { Link } from "react-router-dom";
 
+type Role = "mento" | "menti" | undefined;
 type MentosStatus = "completed" | "pending" | "mento" | "guest";
 
 type MentosCardProps = {
@@ -8,8 +11,8 @@ type MentosCardProps = {
   title: string;
   price?: number;
   location?: string;
-  status: MentosStatus;
   approved?: boolean;
+  status: MentosStatus;
   imageUrl?: string;
   onReportClick?: () => void;
   onReviewClick?: () => void;
@@ -18,8 +21,10 @@ type MentosCardProps = {
   onDeleteClick?: () => void;
   refundDisabled?: boolean;
   reviewDisabled?: boolean;
-  /** 2장 딱 맞춤용 고정 높이 (리스트에서 내려줌) */
-  fixedHeight?: number;
+  reportDisabled?: boolean;
+  fixedHeight?: number; // 부모가 계산한 고정 높이
+  /** ✅ 추가: 화면 컨텍스트(멘토/멘티)에 따라 링크 등 분기 */
+  role?: Role;
 };
 
 const statusStyles: Record<MentosStatus, string> = {
@@ -33,23 +38,33 @@ const statusTextMap: Partial<Record<MentosStatus, string>> = {
   pending: "진행 전",
 };
 
-export default function MentosCard({
-  mentosSeq,
-  onReviewClick,
-  onDeleteClick,
-  onRefundClick,
-  onReportClick,
-  onUpdateClick,
-  approved = false,
-  title,
-  price,
-  location,
-  status,
-  imageUrl,
-  refundDisabled,
-  reviewDisabled,
-  fixedHeight,
-}: MentosCardProps) {
+export default function MentosCard(props: MentosCardProps) {
+  const {
+    mentosSeq,
+    onReviewClick,
+    onDeleteClick,
+    onRefundClick,
+    onReportClick,
+    onUpdateClick,
+    approved = false,
+    title,
+    price,
+    location,
+    status,
+    imageUrl,
+    refundDisabled,
+    reviewDisabled,
+    reportDisabled,
+    fixedHeight,
+    role, // ✅ 추가
+  } = props;
+
+  const act = (fn?: () => void) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fn?.();
+  };
+
   const statusClassName = statusStyles[status] ?? "";
   const statusText = statusTextMap[status] ?? "";
   const formattedPrice =
@@ -60,21 +75,29 @@ export default function MentosCard({
   const actionButton = (() => {
     switch (status) {
       case "completed": {
-        const isDisabled = !!reviewDisabled;
+        const isReviewDisabled = !!reviewDisabled;
+        const isReportDisabled = !!reportDisabled;
         return (
           <>
             <Button
-              className={`text-xs ${isDisabled ? "cursor-not-allowed opacity-70" : ""}`}
+              className={`text-xs ${isReviewDisabled ? "cursor-not-allowed opacity-70" : ""}`}
               variant="lightBlue"
               size="sm"
-              disabled={isDisabled}
-              aria-disabled={isDisabled}
-              onClick={isDisabled ? undefined : onReviewClick}
-              title={isDisabled ? "이미 리뷰를 작성했습니다" : "리뷰 작성"}>
-              {isDisabled ? "리뷰 완료" : "리뷰 작성"}
+              disabled={isReviewDisabled}
+              aria-disabled={isReviewDisabled}
+              onClick={isReviewDisabled ? undefined : act(onReviewClick)}
+              title={isReviewDisabled ? "이미 리뷰를 작성했습니다" : "리뷰 작성"}>
+              {isReviewDisabled ? "리뷰 완료" : "리뷰 작성"}
             </Button>
-            <Button className="text-xs" variant="danger" size="sm" onClick={onReportClick}>
-              신고하기
+            <Button
+              className={`text-xs ${isReportDisabled ? "cursor-not-allowed opacity-70" : ""}`}
+              variant="danger"
+              size="sm"
+              disabled={isReportDisabled}
+              aria-disabled={isReportDisabled}
+              onClick={isReportDisabled ? undefined : act(onReportClick)}
+              title={isReportDisabled ? "이미 신고한 항목입니다" : "신고하기"}>
+              {isReportDisabled ? "신고 완료" : "신고하기"}
             </Button>
           </>
         );
@@ -88,7 +111,7 @@ export default function MentosCard({
             size="sm"
             disabled={isDisabled}
             aria-disabled={isDisabled}
-            onClick={isDisabled ? undefined : onRefundClick}
+            onClick={isDisabled ? undefined : act(onRefundClick)}
             title={isDisabled ? "환불이 불가한 항목입니다" : "환불하기"}>
             환불하기
           </Button>
@@ -97,10 +120,10 @@ export default function MentosCard({
       case "mento":
         return (
           <>
-            <Button className="text-xs" variant="lightBlue" size="sm" onClick={onUpdateClick}>
+            <Button className="text-xs" variant="lightBlue" size="sm" onClick={act(onUpdateClick)}>
               수정하기
             </Button>
-            <Button className="text-xs" variant="danger" size="sm" onClick={onDeleteClick}>
+            <Button className="text-xs" variant="danger" size="sm" onClick={act(onDeleteClick)}>
               삭제하기
             </Button>
           </>
@@ -110,27 +133,38 @@ export default function MentosCard({
     }
   })();
 
+  // 내부 비율: md에서 이미지를 더 줄이고 정보 영역을 늘림
+  const hasActions = status === "completed" || status === "pending" || status === "mento";
+  const imageBoxH = hasActions ? "h-[64%] md:h-[55%]" : "h-[72%] md:h-[63%]";
+  const infoBoxH = hasActions ? "h-[36%] md:h-[45%]" : "h-[28%] md:h-[37%]";
+
+  // ✅ 역할에 따른 디테일 링크 분기 (필요시 동일 경로로 둘 수도 있음)
+
+  const detailPath = `/menti/mentos-detail/${mentosSeq}`;
+
+  const wrapperBase =
+    "mx-auto w-full max-w-[400px] snap-start overflow-hidden rounded-2xl bg-white/90 " +
+    "backdrop-blur-[1px] shadow-[0_6px_18px_-8px_rgba(2,6,23,0.20)] ring-1 ring-slate-200 " +
+    "transition-transform active:scale-[0.997] focus-within:ring-0 content-visibility-auto will-change-transform";
+
+  const wrapperHeightClass = fixedHeight
+    ? "[height:var(--card-h)] md:[height:calc(var(--card-h)*0.88)]"
+    : "";
+
   return (
     <div
-      className={[
-        "mx-auto w-full max-w-[400px] snap-start",
-        // Glass-lite 카드
-        "overflow-hidden rounded-2xl bg-white/90 backdrop-blur-[1px]",
-        "shadow-[0_6px_18px_-8px_rgba(2,6,23,0.20)] ring-1 ring-slate-200",
-        // 터치 시만 미세한 압축감
-        "transition-transform active:scale-[0.997]",
-        // 파랑 하이라이트 제거
-        "focus-within:ring-0",
-        // 성능
-        "content-visibility-auto will-change-transform",
-      ].join(" ")}
-      style={fixedHeight ? ({ height: `${fixedHeight}px` } as React.CSSProperties) : undefined}>
+      className={`${wrapperBase} ${wrapperHeightClass}`}
+      style={
+        fixedHeight
+          ? ({ ["--card-h" as any]: `${fixedHeight}px` } as React.CSSProperties)
+          : undefined
+      }>
       <Link
-        to={`/menti/mentos-detail/${mentosSeq}`}
+        to={detailPath}
         className="block h-full outline-none focus-visible:outline-none"
         style={{ WebkitTapHighlightColor: "transparent" }}>
-        {/* 썸네일: 72% (더 크게) */}
-        <div className="relative h-[72%] overflow-hidden bg-slate-100">
+        {/* 썸네일 */}
+        <div className={`relative ${imageBoxH} overflow-hidden bg-slate-100`}>
           {approved && (
             <div className="absolute top-[20px] right-[-35px] z-10 flex h-[35px] w-[140px] rotate-45 items-center justify-center overflow-hidden border-t border-r border-b border-l border-t-sky-500/80 border-r-blue-900/80 border-b-blue-900/80 border-l-sky-500/80 bg-gradient-to-br from-[#4fa8f8] to-[#1161ff]">
               <div className="font-WooridaumB text-center text-[16px] text-white">EXPERT</div>
@@ -154,15 +188,14 @@ export default function MentosCard({
           )}
         </div>
 
-        <div className="flex h-[28%] flex-col justify-between px-3.5 py-3">
-          {/* 제목 */}
-          <h3 className="font-WooridaumR line-clamp-2 text-[16px] leading-snug font-semibold tracking-[-0.2px] text-slate-900">
+        {/* 정보 */}
+        <div className={`flex ${infoBoxH} flex-col justify-between px-3.5 py-3`}>
+          <h3 className="line-clamp-2 text-[14px] leading-snug font-semibold tracking-[-0.2px] text-slate-900">
             {title}
           </h3>
 
-          {/* 메타 & 가격 */}
           <div className="mt-2 flex items-center justify-between">
-            <div className="font-WooridaumR flex items-center text-slate-500">
+            <div className="flex min-w-0 items-center text-slate-500">
               <svg
                 className="mr-1.5 h-4 w-4 flex-shrink-0"
                 viewBox="0 0 24 24"
@@ -181,16 +214,13 @@ export default function MentosCard({
                   d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              <span className="truncate text-[12px]"> {location} </span>
+              <span className="truncate text-[12px]">{location}</span>
             </div>
-
-            {/* 뉴트럴 가격 pill (작게, 고대비) */}
-            <span className="font-WooridaumR rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-semibold text-slate-900">
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-semibold text-slate-900">
               ₩{formattedPrice}
             </span>
           </div>
 
-          {/* 필요한 경우만 버튼 */}
           {actionButton && <div className="mt-2 flex gap-2">{actionButton}</div>}
         </div>
       </Link>

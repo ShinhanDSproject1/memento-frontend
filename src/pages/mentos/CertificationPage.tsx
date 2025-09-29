@@ -3,6 +3,9 @@ import Button from "@/widgets/common/Button";
 import certificationSuccess from "@assets/images/certification/certification-success.svg";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useMyProfile, profileQueryKeys } from "@entities/profile";
+import { clearUserSnapshot } from "@/shared";
 
 // ✅ 분리한 API 모듈 사용
 import { registerCertification } from "@entities/certification/api/registerCertification";
@@ -24,8 +27,9 @@ const SS_KEY = "cert.lastResultPayload";
 
 const CertificationPage: React.FC = () => {
   const navigate = useNavigate();
+  const { data: profile } = useMyProfile();
+  const queryClient = useQueryClient();
   const location = useLocation();
-  const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // 업로드 페이지에서 navigate로 넘긴 payload
@@ -56,6 +60,18 @@ const CertificationPage: React.FC = () => {
     if (!data) navigate("/mento/certification");
   }, [data, navigate]);
 
+  useEffect(() => {
+    // 에러 메시지가 이미 있다면 중복 검사 실행 X
+    if (errorMsg) return;
+
+    if (data?.certificationName && profile && profile.memberType === "MENTO") {
+      const existingCerts = profile.certifications?.map((c) => c.certificationName) ?? [];
+      if (existingCerts.includes(data.certificationName)) {
+        setErrorMsg("이미 등록된 자격증입니다.");
+      }
+    }
+  }, [data, profile, errorMsg]);
+
   const img = data?.verifiedCertificationImage;
 
   // 이미지 URL → File 변환 (S3 등 원격 이미지 첨부용)
@@ -72,33 +88,35 @@ const CertificationPage: React.FC = () => {
     }
   };
 
-  const handleConfirm = async () => {
-    if (!data) return;
+  // 데이터 등록 로직
+  const registerCertMutation = useMutation({
+    mutationFn: registerCertification, // API 호출 함수
+    onSuccess: () => {
+      clearUserSnapshot();
 
-    setSubmitting(true);
-    setErrorMsg(null);
-
-    try {
-      // 💡 JSON 기반 API 호출
-      const res = await registerCertification({
-        certificationName: data.certificationName ?? "",
-        certificationImgUrl: data.verifiedCertificationImage ?? "",
-      });
-
-      if (res.code !== 1000) {
-        throw new Error(res.message || "자격증 등록에 실패했습니다.");
-      }
-
-      // 성공 후 정리 및 이동
-      try {
-        sessionStorage.removeItem(SS_KEY);
-      } catch {}
-      navigate("/mento");
-    } catch (err: any) {
+      // 성공 시 실행
+      queryClient.removeQueries({ queryKey: profileQueryKeys.me() });
+      sessionStorage.removeItem(SS_KEY);
+      navigate("/mento", { replace: true });
+    },
+    onError: (err: any) => {
+      // 실패 시 실행
       setErrorMsg(err?.message || "자격증 등록에 실패했습니다.");
-    } finally {
-      setSubmitting(false);
+    },
+  });
+
+  const handleConfirm = async () => {
+    if (errorMsg === "이미 등록된 자격증입니다.") {
+      navigate("/mento", { replace: true });
+      return;
     }
+
+    if (!data || !data.certificationName || errorMsg) return;
+
+    registerCertMutation.mutate({
+      certificationName: data.certificationName,
+      certificationImgUrl: data.verifiedCertificationImage ?? "",
+    });
   };
 
   return (
@@ -168,8 +186,8 @@ const CertificationPage: React.FC = () => {
           onClick={handleConfirm}
           variant="primary"
           className="font-WooridaumB w-full rounded-2xl px-8 py-4 font-bold"
-          disabled={submitting}>
-          {submitting ? "등록 중..." : "확인"}
+          disabled={registerCertMutation.isPending}>
+                    {registerCertMutation.isPending ? "등록 중..." : "확인"}
         </Button>
       </footer>
     </div>
