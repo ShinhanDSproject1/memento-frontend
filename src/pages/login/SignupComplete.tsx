@@ -9,7 +9,7 @@ export interface SignupCompleteProps {
 export default function SignupComplete({ onLogin, onHome }: SignupCompleteProps) {
   const navigate = useNavigate();
 
-  const goLogin = onLogin ?? (() => navigate("/login"));
+  const goLogin = onLogin ?? (() => navigate("/"));
   const goHome = onHome ?? (() => navigate("/"));
 
   return (
