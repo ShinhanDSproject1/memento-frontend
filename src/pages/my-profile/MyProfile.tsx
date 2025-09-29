@@ -130,6 +130,12 @@ export default function MyProfile() {
     }
   };
 
+  //
+  const handleInfoCancel = () => {
+    setEditInfo(false);
+    setInfoDraft({ current: "", next: "", confirm: "" });
+  };
+
   const handleWithdrawClick = () => {
     openModal("withdrawConfirm"); // ✅ 확인 모달
   };
@@ -307,7 +313,13 @@ export default function MyProfile() {
                         )}
                     </div>
                   </FieldRow>
-                  <div className="mt-1 flex justify-end">
+                  <div className="mt-1 flex justify-end gap-x-2">
+                    <button
+                      className="cursor-pointer rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 md:text-base"
+                      onClick={handleInfoCancel}
+                      type="button">
+                      취소
+                    </button>
                     <button
                       className={[
                         "cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold text-white md:text-base",
