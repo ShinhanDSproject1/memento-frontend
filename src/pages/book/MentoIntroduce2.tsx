@@ -1,5 +1,6 @@
 // src/pages/MentoIntroduce.tsx
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useNavigate } from "react-router-dom";
 
 import DayChips, { DAYS, type Day } from "@/widgets/common/DayChips";
 import HourRangePicker, { type HourRange } from "@/widgets/common/HourRangePicker";
@@ -54,6 +55,7 @@ function parseHour(hhmm?: string | null, fallback: number): number {
 const toHHMM = (h: number) => String(h).padStart(2, "0") + ":00";
 
 export default function MentoIntroduce() {
+  const navigate = useNavigate();
   const { data, isLoading, isError, error, refetch, isFetching } = useMentoProfileDetail();
 
   const { isOpen, modalType, modalData, openModal, closeModal } = useModal() as {
@@ -64,6 +66,7 @@ export default function MentoIntroduce() {
     closeModal: () => void;
   };
 
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [overrideImage, setOverrideImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const profileImage = overrideImage ?? data?.mentoProfileImage ?? kogiriFace;
@@ -142,6 +145,7 @@ export default function MentoIntroduce() {
       const res = await updateMentoProfileDetail({ requestDto, imageFile });
       closeModal();
       if (res.code === 1000) {
+        setSubmissionSuccess(true);
         openModal("reviewComplete", { message: "프로필이 저장되었습니다." });
         await refetch();
       } else {
@@ -154,6 +158,16 @@ export default function MentoIntroduce() {
       });
     }
   };
+
+  const handleSuccessConfirm = () => {
+    closeModal();
+  };
+
+  useEffect(() => {
+    if (!submissionSuccess || isOpen) return;
+
+    navigate("/mento");
+  }, [submissionSuccess, isOpen, navigate]);
 
   if (isLoading || isFetching) {
     return (
@@ -264,7 +278,7 @@ export default function MentoIntroduce() {
           type={modalType}
           isOpen={isOpen}
           onCancel={closeModal}
-          onConfirm={closeModal}
+          onConfirm={modalType === "reviewComplete" ? handleSuccessConfirm : closeModal}
           onSubmit={closeModal}
           modalData={modalData}
         />

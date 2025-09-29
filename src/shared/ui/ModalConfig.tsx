@@ -258,7 +258,10 @@ export const MODAL_CONFIG: ModalConfigRecord = {
       const MAX = 100;
       const C = () => {
         const [t, setT] = useState(m.initialContent ?? "");
-        useEffect(() => m.onContentChange?.(t), [t]);
+        useEffect(() => {
+          m.onContentChange?.(t);
+          return undefined; // ✅ cleanup 없음 명시
+        }, [t, m]);
         return (
           <div className="flex flex-col px-4">
             <StarRating initialRating={m.initialRating ?? 0} onRatingChange={m.onRatingChange} />
@@ -315,20 +318,16 @@ export const MODAL_CONFIG: ModalConfigRecord = {
         error: string | null;
       };
 
-      // 로딩 중일 때
       if (loading) {
         return <div className="p-4 text-center text-gray-500">상세 정보를 불러오는 중...</div>;
       }
-      // 에러가 발생했을 때
       if (error) {
         return <div className="p-4 text-center text-red-500">{error}</div>;
       }
-      // 데이터가 비어있는 예외 상황 처리
       if (!detail) {
         return <div className="p-4 text-center text-gray-500">표시할 데이터가 없습니다.</div>;
       }
 
-      // 성공 시
       return (
         <div className="flex flex-col gap-4 p-4">
           <TitleTextComponent subtitle="신고자" context={detail.reporterName} />
@@ -356,7 +355,6 @@ export const MODAL_CONFIG: ModalConfigRecord = {
                 <button
                   type="button"
                   onClick={() => {
-                    // CORS 위반 예방
                     const proxyImageUrl = detail.reportImage.replace(
                       "https://memento.shinhanacademy.co.kr",
                       "/api",
@@ -399,14 +397,12 @@ export const MODAL_CONFIG: ModalConfigRecord = {
     ],
   },
 
-  /* 프로필 수정 완료 */
   profileUpdated: {
     icon: checkBlueIcon,
     message: "수정이 완료되었습니다.",
     buttons: [{ text: "확인", variant: "primary", size: "lg", actionType: "close" }],
   },
 
-  /* 회원 탈퇴 확인 */
   withdrawConfirm: {
     icon: deleteIcon,
     message: "정말 탈퇴하시겠습니까?",
@@ -416,14 +412,12 @@ export const MODAL_CONFIG: ModalConfigRecord = {
     ],
   },
 
-  /* 회원 탈퇴 완료 */
   withdrawComplete: {
     icon: checkBlueIcon,
     message: "회원 탈퇴가 완료되었습니다.",
     buttons: [{ text: "확인", variant: "primary", size: "lg", actionType: "confirm" }],
   },
 
-  /* (옵션) 회원 탈퇴 실패 */
   withdrawFailed: {
     icon: deleteIcon,
     message: "탈퇴 요청 처리 중 문제가 발생했습니다.",
@@ -453,7 +447,6 @@ export const MODAL_CONFIG: ModalConfigRecord = {
  * ========================= */
 export type ModalKey = keyof ModalConfigRecord;
 
-/** 제네릭 type guard (any/unknown 없이) */
 export function isFormConfig<K extends ModalKey>(
   c: ModalConfigRecord[K] | undefined,
 ): c is Extract<ModalConfigRecord[K], FormConfig<ModalDataMap[K]>> {

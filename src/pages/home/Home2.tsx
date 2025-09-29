@@ -1,3 +1,4 @@
+// src/pages/home2/HomePage.tsx
 import { CategoryButtonGroup } from "@/widgets/home2/CategoryButton";
 import { useAuth } from "@entities/auth";
 import { useState } from "react";
@@ -57,12 +58,9 @@ export default function HomePage({
             ]
           : [];
 
-  // ✅ 배경: 멘토일 때 은은한 연녹색 그라데이션
-  // ✅ 배경: 멘토일 때 은은한 초록 그라데이션 (약간 어두운 느낌)
+  // ✅ 배경
   const bgClass =
-    normalized === "mentor"
-      ? "bg-gradient-to-b from-white to-emerald-300" // 기존보다 조금 더 진한 초록
-      : "bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1]"; // 멘티/게스트
+    normalized === "mentor" ? "bg-gradient-to-b bg-[#F7FAFF]" : "bg-gradient-to-b bg-[#F7FAFF] ";
 
   // ✅ 로컬 상태 (로그인 모달)
   const [showLoginForm, setShowLoginForm] = useState(false);
@@ -94,21 +92,25 @@ export default function HomePage({
 
   return (
     <main
-      className={`relative grid h-screen w-full grid-rows-[auto_1fr_auto] ${bgClass} px-4 md:h-full`}
+      className={`relative grid h-screen w-full grid-rows-[auto_1fr_auto] ${bgClass} px-4 md:h-183`}
       data-app-screen>
       {/* 상단 카테고리 */}
       <section className="mx-auto mt-5 w-full max-w-lg">
-        <CategoryButtonGroup role={normalized} />
+        <CategoryButtonGroup />
       </section>
 
       {/* 중앙 히어로 */}
-      <section className="mx-auto mt-10 flex w-full max-w-md flex-col items-center justify-center">
+      <section className="mx-auto mt-2 flex w-full max-w-md flex-col items-center justify-center">
         <HeroBubble
           text={`안녕하세요! 저는 메멘토의 AI 도우미 ‘${aiHelperName}’예요.`}
           highlight={memberName}
           rotateTexts={rotateTexts}
           intervalMs={10_000}
-          role={normalized} // ✅ 여기 추가
+          role={normalized}
+          /** ✅ 말풍선 위에 작게 고정되는 '대화하기' 버튼 */
+          showTalkCTA
+          talkLabel="대화하기"
+          onClickTalk={() => navigate("/recommend")}
         />
         {/* 캐릭터는 role을 전달 → 멘토일 때 초록 캐릭터 */}
         <CharacterFigure glowed={isLoggedIn} role={normalized} />
