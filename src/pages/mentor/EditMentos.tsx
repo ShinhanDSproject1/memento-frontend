@@ -87,7 +87,7 @@ export default function EditMentosPage() {
   return (
     <div className="flex min-h-full w-full justify-center bg-[#f5f6f8]">
       <section className="w-full bg-white px-4 py-5 shadow">
-        <h1 className="font-WooridaumB mb-6 text-[20px] font-bold">멘토링 수정하기</h1>
+        <h1 className="font-WooridaumB mt-6 mb-9 pl-2 text-[20px] font-bold">멘토링 수정하기</h1>
 
         {/* 성공 모달 */}
         <CommonModal

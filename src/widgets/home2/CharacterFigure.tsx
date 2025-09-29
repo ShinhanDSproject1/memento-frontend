@@ -1,4 +1,3 @@
-// src/widgets/home2/CharacterFigure.tsx
 import {
   default as characterGomBlue,
   default as characterGomGreen,
@@ -16,7 +15,7 @@ export function CharacterFigure({ glowed, role }: { glowed: boolean; role?: "men
     <img
       src={src}
       alt={role === "mentor" ? "멘토 캐릭터" : "멘티 캐릭터 토리"}
-      className={["mt-5 h-auto w-[60%] max-w-[200px] transition md:mt-10", glowColor].join(" ")}
+      className={["h-auto w-[60%] max-w-[200px] transition", glowColor].join(" ")}
     />
   );
 }

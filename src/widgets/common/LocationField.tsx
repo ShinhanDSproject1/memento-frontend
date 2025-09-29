@@ -72,7 +72,7 @@ export default function LocationField({ value, onChange }: LocationFieldProps) {
           onClick={handleOpenPostcode}
           className={`font-WooridaumB h-12 w-28 flex-shrink-0 cursor-pointer rounded-lg text-sm transition-colors ${
             loaded
-              ? "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-300"
+              ? "hover:bg-[#005EF9 bg-[#005EF9] text-white focus:ring-2"
               : "cursor-not-allowed bg-slate-200 text-white"
           }`}>
           주소 검색

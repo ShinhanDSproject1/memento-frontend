@@ -1,4 +1,3 @@
-// src/widgets/DeviceS.tsx
 import type { PropsWithChildren } from "react";
 
 export default function DeviceSimulator({
@@ -9,15 +8,15 @@ export default function DeviceSimulator({
   return (
     <div className="min-h-screen w-full bg-gray-100">
       {/* 모바일에서는 그대로 children 출력 */}
-      <div className="block md:hidden">{children}</div>
+      <div className="block sm:hidden">{children}</div>
 
       {/* md 이상일 때만 폰 시뮬레이터 보이기 */}
-      <div className="hidden min-h-screen w-full items-center justify-center p-4 text-slate-900 md:flex">
+      <div className="hidden min-h-screen w-full items-center justify-center p-4 text-slate-900 sm:flex">
         {/* 📱 폰 외곽 프레임 */}
         <div
           className={[
             "relative",
-            "h-[880px] w-[430px]",
+            "h-[100vh] w-[430px]",
             "bg-[linear-gradient(145deg,#d4d7db,#a7abb3,#7c808a)]",
             "rounded-[52px]",
             "shadow-[0_40px_120px_rgba(0,0,0,0.40),inset_0_0_0_1px_rgba(255,255,255,0.25)]",

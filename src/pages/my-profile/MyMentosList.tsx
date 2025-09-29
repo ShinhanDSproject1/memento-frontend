@@ -148,9 +148,9 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
   const theme =
     role === "mento"
       ? {
-          bg: "bg-gradient-to-b from-emerald-50 to-emerald-100",
-          title: "text-emerald-800",
-          button: "bg-emerald-600 hover:bg-emerald-700 text-white",
+          bg: "bg-[#F7FAFF]",
+          title: "text-[#1E3A8A]",
+          button: "bg-[#005EF9] hover:bg-[#0045c9] text-white",
         }
       : {
           bg: "bg-[#F0F7FF]",
@@ -376,7 +376,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
           )}
 
           {/* List */}
-          <section className="flex flex-col gap-6 pt-1">
+          <section className="flex flex-col gap-4.5">
             {role === "mento"
               ? mentorList.map((item) => (
                   <MentosCard
@@ -418,6 +418,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                           reservationSeq: item.reservationSeq,
                           initialRating: 3,
                           initialContent: "",
+                          title: item.mentosTitle,
                           onRatingChange: (r: number) => (reviewDraftRef.current.rating = r),
                           onContentChange: (t: string) => (reviewDraftRef.current.content = t),
                         } as any)
@@ -432,10 +433,15 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                       onReportClick={() =>
                         item.reportCompleted
                           ? openModal("withdrawFailed", { message: "이미 신고한 항목입니다." })
-                          : openModal("reportMentos", {
-                              mentosSeq: item.mentosSeq,
-                              idemKey: crypto.randomUUID(),
-                            })
+                          : openModal(
+                              "reportMentos",
+
+                              {
+                                title: "신고하기",
+                                mentosSeq: item.mentosSeq,
+                                idemKey: crypto.randomUUID(),
+                              },
+                            )
                       }
                       refundDisabled={!item.reservationSeq}
                       reviewDisabled={item.reviewCompleted} // ✅ 리뷰 여부는 여기서 처리

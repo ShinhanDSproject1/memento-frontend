@@ -208,7 +208,7 @@ export default function MentosList() {
                 key={idx}
                 className="snap-start"
                 style={{ height: `calc(${listH}px - ${PAGE_GAP}px)` }}>
-                <div className="flex h-full flex-col gap-6">
+                <div className="flex h-full flex-col gap-6 py-2">
                   {pair.map((item) => (
                     <div key={item.mentosSeq} className="min-h-0 flex-1 [&>*]:h-full">
                       <MentosCard

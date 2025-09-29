@@ -16,7 +16,7 @@ export function PrimaryActions({
   const navigate = useNavigate();
 
   return (
-    <div className="mx-auto mb-5 flex w-full max-w-md flex-col gap-6 md:mb-10">
+    <div className="mx-auto mb-5 flex w-full max-w-md flex-col gap-6">
       {isLoggedIn && role === "mentee" ? (
         <>
           {/* 대화하기 버튼 (강조)
@@ -36,7 +36,7 @@ export function PrimaryActions({
             <button
               type="button"
               onClick={() => navigate("/mento/nearby")}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-300 bg-blue-100 px-5 py-3 text-[15px] font-medium text-blue-800 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-800">
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-300 bg-blue-50 px-5 py-3 text-[14px] font-medium text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-800">
               내 주변 멘토찾기
               <ArrowRight className="h-4 w-4" />
             </button>
@@ -46,7 +46,7 @@ export function PrimaryActions({
               <button
                 type="button"
                 onClick={() => navigate("/menti/myprofile")}
-                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-300 bg-blue-100 px-3 py-4 text-xs font-medium text-blue-800 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-900 hover:shadow-md">
+                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-300 bg-blue-50 px-3 py-4 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-900 hover:shadow-md">
                 {/* ✅ png 아이콘 삽입 */}
                 <img
                   src="/src/shared/assets/icons/icon-myprofile.png" // 실제 프로젝트 아이콘 경로로 교체
@@ -58,7 +58,7 @@ export function PrimaryActions({
               <button
                 type="button"
                 onClick={() => navigate("/menti/mymentos")}
-                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-300 bg-blue-100 px-3 py-4 text-xs font-medium text-blue-800 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-900 hover:shadow-md">
+                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-300 bg-blue-50 px-3 py-4 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-900 hover:shadow-md">
                 <img
                   src="/src/shared/assets/icons/icon-mymentoring.png" // 실제 프로젝트 아이콘 경로로 교체
                   alt="나의 정보관리"
@@ -70,7 +70,7 @@ export function PrimaryActions({
               <button
                 type="button"
                 onClick={() => navigate("/chat")}
-                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-300 bg-blue-100 px-3 py-4 text-xs font-medium text-blue-800 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-900 hover:shadow-md">
+                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-300 bg-blue-50 px-3 py-4 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-900 hover:shadow-md">
                 <img
                   src="/src/shared/assets/icons/icon-chat.png" // 실제 프로젝트 아이콘 경로로 교체
                   alt="나의 정보관리"
@@ -88,7 +88,7 @@ export function PrimaryActions({
             <button
               type="button"
               onClick={() => navigate("/mento/certification")}
-              className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-4 text-xs font-medium text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100 hover:text-emerald-800 hover:shadow-md">
+              className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-3.5 text-xs font-medium text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100 hover:text-emerald-800 hover:shadow-md">
               <span className="text-base">📜</span>
               AI 자격증 인증
             </button>
@@ -96,7 +96,7 @@ export function PrimaryActions({
             <button
               type="button"
               onClick={() => navigate("/create-mentos")}
-              className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-4 text-xs font-medium text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100 hover:text-emerald-800 hover:shadow-md">
+              className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-3.5 text-xs font-medium text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100 hover:text-emerald-800 hover:shadow-md">
               <span className="text-base">➕</span>
               멘토링 생성하기
             </button>
@@ -148,7 +148,7 @@ export function PrimaryActions({
             <button
               type="button"
               onClick={onOpenLogin}
-              className="mb-10 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-[15px] font-semibold text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800 md:mb-7">
+              className="mb-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-[15px] font-semibold text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800">
               로그인
               <ArrowRight className="h-4 w-4" />
             </button>

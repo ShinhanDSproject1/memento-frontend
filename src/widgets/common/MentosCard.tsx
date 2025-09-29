@@ -165,7 +165,11 @@ export default function MentosCard(props: MentosCardProps) {
         style={{ WebkitTapHighlightColor: "transparent" }}>
         {/* 썸네일 */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 md:aspect-[16/9]">
-
+          {approved && (
+            <div className="absolute top-[20px] right-[-35px] z-10 flex h-[35px] w-[140px] rotate-45 items-center justify-center overflow-hidden border-t border-r border-b border-l border-t-blue-500/80 border-r-blue-900/80 border-b-blue-900/80 border-l-blue-500/80 bg-gradient-to-br from-blue-500 to-[#1161ff]">
+              <div className="font-WooridaumB text-center text-[16px] text-white">EXPERT</div>
+            </div>
+          )}
           <img
             className="h-full w-full object-cover"
             src={imageUrl || "https://picsum.photos/seed/picsum/400/240"}
@@ -185,7 +189,7 @@ export default function MentosCard(props: MentosCardProps) {
         </div>
 
         {/* 정보 */}
-        <div className="grid min-h-0 flex-1 grid-rows-[auto_auto_auto] gap-2 px-3.5 py-3">
+        <div className="flex flex-1 flex-col justify-between gap-2 px-3.5 py-3">
           <h3 className="font-WooridaumB line-clamp-2 text-[14px] leading-snug font-semibold tracking-[-0.2px] break-keep text-slate-900">
             {title}
           </h3>
@@ -211,11 +215,14 @@ export default function MentosCard(props: MentosCardProps) {
               </svg>
               <span className="truncate text-[12px]">{location}</span>
             </div>
-            <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-semibold text-slate-900">
-              ₩{formattedPrice}
-            </span>
+            {actionButton ? (
+              <div className="flex shrink-0 flex-wrap gap-2">{actionButton}</div>
+            ) : (
+              <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-semibold text-slate-900">
+                ₩{formattedPrice}
+              </span>
+            )}
           </div>
-          {actionButton && <div className="mt-2 flex flex-wrap gap-2">{actionButton}</div>}{" "}
         </div>
       </Link>
     </div>

@@ -4,7 +4,7 @@ import { Outlet } from "react-router-dom";
 
 export default function HomeLayout() {
   return (
-    <div className="mx-auto w-full max-w-100 rounded-xl bg-white bg-gradient-to-b from-[#F7FAFF] to-[#EEF4FF]">
+    <div className="mx-auto w-full max-w-100 rounded-xl bg-[#F7FAFF]">
       <MainHeader />
       <main>
         <Outlet />
