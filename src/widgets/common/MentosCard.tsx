@@ -11,6 +11,7 @@ type MentosCardProps = {
   title: string;
   price?: number;
   location?: string;
+  approved?: boolean;
   status: MentosStatus;
   imageUrl?: string;
   onReportClick?: () => void;
@@ -45,6 +46,7 @@ export default function MentosCard(props: MentosCardProps) {
     onRefundClick,
     onReportClick,
     onUpdateClick,
+    approved = false,
     title,
     price,
     location,
@@ -131,10 +133,10 @@ export default function MentosCard(props: MentosCardProps) {
     }
   })();
 
-  // 내부 비율: md에서 이미지를 더 줄이고 정보 영역을 늘림
-  const hasActions = status === "completed" || status === "pending" || status === "mento";
-  const imageBoxH = hasActions ? "h-[64%] md:h-[55%]" : "h-[72%] md:h-[63%]";
-  const infoBoxH = hasActions ? "h-[36%] md:h-[45%]" : "h-[28%] md:h-[37%]";
+  // // 내부 비율: md에서 이미지를 더 줄이고 정보 영역을 늘림
+  // const hasActions = status === "completed" || status === "pending" || status === "mento";
+  // const imageBoxH = hasActions ? "h-[64%] md:h-[55%]" : "h-[72%] md:h-[63%]";
+  // const infoBoxH = hasActions ? "h-[36%] md:h-[45%]" : "h-[28%] md:h-[37%]";
 
   // ✅ 역할에 따른 디테일 링크 분기 (필요시 동일 경로로 둘 수도 있음)
 
@@ -159,10 +161,11 @@ export default function MentosCard(props: MentosCardProps) {
       }>
       <Link
         to={detailPath}
-        className="block h-full outline-none focus-visible:outline-none"
+        className="flex h-full flex-col outline-none focus-visible:outline-none"
         style={{ WebkitTapHighlightColor: "transparent" }}>
         {/* 썸네일 */}
-        <div className={`relative ${imageBoxH} overflow-hidden bg-slate-100`}>
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 md:aspect-[16/9]">
+
           <img
             className="h-full w-full object-cover"
             src={imageUrl || "https://picsum.photos/seed/picsum/400/240"}
@@ -182,12 +185,11 @@ export default function MentosCard(props: MentosCardProps) {
         </div>
 
         {/* 정보 */}
-        <div className={`flex ${infoBoxH} flex-col justify-between px-3.5 py-3`}>
-          <h3 className="line-clamp-2 text-[14px] leading-snug font-semibold tracking-[-0.2px] text-slate-900">
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_auto_auto] gap-2 px-3.5 py-3">
+          <h3 className="font-WooridaumB line-clamp-2 text-[14px] leading-snug font-semibold tracking-[-0.2px] break-keep text-slate-900">
             {title}
           </h3>
-
-          <div className="mt-2 flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <div className="flex min-w-0 items-center text-slate-500">
               <svg
                 className="mr-1.5 h-4 w-4 flex-shrink-0"
@@ -209,12 +211,11 @@ export default function MentosCard(props: MentosCardProps) {
               </svg>
               <span className="truncate text-[12px]">{location}</span>
             </div>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-semibold text-slate-900">
+            <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-semibold text-slate-900">
               ₩{formattedPrice}
             </span>
           </div>
-
-          {actionButton && <div className="mt-2 flex gap-2">{actionButton}</div>}
+          {actionButton && <div className="mt-2 flex flex-wrap gap-2">{actionButton}</div>}{" "}
         </div>
       </Link>
     </div>

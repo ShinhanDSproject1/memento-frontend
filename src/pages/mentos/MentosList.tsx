@@ -218,6 +218,7 @@ export default function MentosList() {
                         location={item.region}
                         status="guest"
                         imageUrl={item.mentosImg}
+                        approved={item.approved}
                       />
                     </div>
                   ))}
