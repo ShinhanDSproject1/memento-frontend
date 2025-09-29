@@ -5,15 +5,20 @@ import { MentosMainTitleComponent } from "@widgets/mentos";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
-// 로그인 바텀시트 & 인증 훅 & 포털
+function chunk<T>(arr: T[], size: number) {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
 import { LoginSheet } from "@/widgets/home2/LoginSheet";
 import { useAuth } from "@entities/auth";
 import { createPortal } from "react-dom";
 
 const LIMIT = 5;
-const GAP_PX = 24; // gap-6
-const PAGE_PADDING_BOTTOM = 24; // pb-6
-
+const GAP_PX = 24;
+const PAGE_PADDING_BOTTOM = 0;
+const PAGE_GAP = 16;
 const TITLE_MAP: Record<string, string> = {
   consumption: "소비패턴 멘토링",
   tips: "생활노하우 멘토링",
@@ -52,19 +57,15 @@ export default function MentosList() {
 
   const list = data?.pages.flatMap((p) => p.result.mentos) ?? [];
   const empty = status === "success" && !isLoading && !isError && list.length === 0;
-
-  // 로그인 모달 상태 & 인증
+  const pages = useMemo(() => chunk(list, 2), [list]);
   const { user, login } = useAuth();
   const isLoggedIn = !!user;
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  // 헤더와 맞춘 이벤트 이름 & 중복 가드
   const OPEN_LOGIN_SHEET = "app:login:open";
   const openGuardRef = useRef(false);
-
-  // ✅ 최신 상태를 안전하게 읽기 위한 ref (리스너는 한 번만 등록)
   const isLoggedInRef = useRef(isLoggedIn);
   const showLoginFormRef = useRef(showLoginForm);
   useEffect(() => {
@@ -74,7 +75,6 @@ export default function MentosList() {
     showLoginFormRef.current = showLoginForm;
   }, [showLoginForm]);
 
-  // 높이 계산 → 2장 고정
   useEffect(() => {
     const calcHeights = () => {
       const titleBottom =
@@ -91,7 +91,6 @@ export default function MentosList() {
     return () => window.removeEventListener("resize", calcHeights);
   }, []);
 
-  // 무한 스크롤
   useEffect(() => {
     if (!loaderRef.current || !scrollRef.current || !hasNextPage) return;
     const io = new IntersectionObserver(
@@ -106,20 +105,17 @@ export default function MentosList() {
     return () => io.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  // ✅ 헤더에서 쏜 이벤트를 이 페이지에서만 받아서 모달 오픈 (전역 싱글톤 + 디바운스)
   useEffect(() => {
     const EVENT = OPEN_LOGIN_SHEET;
-    const KEY_HANDLER = "__mentos_login_handler__"; // 전역 핸들러 키
-    const KEY_LAST_TS = "__mentos_login_lastts__"; // 전역 마지막 처리 시각
+    const KEY_HANDLER = "__mentos_login_handler__";
+    const KEY_LAST_TS = "__mentos_login_lastts__";
     const target = document as any;
 
-    // 이미 등록되어 있으면 다시 등록하지 않음 (HMR/StrictMode 대비)
     if (!target[KEY_HANDLER]) {
       const handler = (ev: Event) => {
-        // 초단기 중복 호출(더블 클릭/StrictMode/HMR) 디바운스
         const now = Date.now();
         const last = typeof target[KEY_LAST_TS] === "number" ? target[KEY_LAST_TS] : 0;
-        if (now - last < 250) return; // 250ms 안에 다시 들어오면 무시
+        if (now - last < 250) return;
         target[KEY_LAST_TS] = now;
 
         if (!isLoggedInRef.current && !showLoginFormRef.current) {
@@ -132,7 +128,6 @@ export default function MentosList() {
       target[KEY_HANDLER] = handler;
     }
 
-    // 언마운트 시 해제 (개발/페이지 이동 시 클린업)
     return () => {
       const current = target[KEY_HANDLER] as EventListener | undefined;
       if (current) {
@@ -141,9 +136,8 @@ export default function MentosList() {
         delete target[KEY_LAST_TS];
       }
     };
-  }, []); // 반드시 빈 배열: 리스너는 한 번만 등록
+  }, []);
 
-  // 로그인 제출 (리스트 페이지는 성공 시 모달만 닫음)
   const handleLoginSubmit = async ({
     id,
     pw,
@@ -179,18 +173,16 @@ export default function MentosList() {
   }
 
   return (
-    // 페이지 배경: 아주 미세한 그라데이션
     <div className="to-[#c2d2f1]font-sans min-h-screen bg-gradient-to-b from-[#F7FAFF] antialiased">
       <div className="mx-auto min-h-screen max-w-md">
         {/* 타이틀 */}
         <div ref={headerRef} className="px-6 pb-2">
           <MentosMainTitleComponent mainTitle={mainTitle} />
         </div>
-
         {/* 스크롤 영역: 2장 스냅 */}
         <div
           ref={scrollRef}
-          className="snap-y snap-mandatory overflow-y-auto px-4 pb-6"
+          className="snap-y snap-mandatory overflow-y-auto px-4"
           style={listH ? { height: `${listH}px` } : undefined}>
           {isLoading && (
             <div className="flex items-center justify-center py-16 text-sm text-slate-600">
@@ -210,21 +202,30 @@ export default function MentosList() {
           )}
 
           {empty && <div className="py-20 text-center text-slate-500">표시할 멘토링이 없어요.</div>}
-
-          <section className="flex flex-col gap-6 pt-4">
-            {list.map((item) => (
-              <MentosCard
-                key={item.mentosSeq}
-                mentosSeq={item.mentosSeq}
-                title={item.mentosTitle}
-                price={item.mentosPrice}
-                location={item.region}
-                status={"guest"}
-                imageUrl={item.mentosImg}
-                fixedHeight={cardH} // 2장 딱 맞춤
-              />
+          <div className="space-y-4">
+            {pages.map((pair, idx) => (
+              <section
+                key={idx}
+                className="snap-start"
+                style={{ height: `calc(${listH}px - ${PAGE_GAP}px)` }}>
+                <div className="flex h-full flex-col gap-6">
+                  {pair.map((item) => (
+                    <div key={item.mentosSeq} className="min-h-0 flex-1 [&>*]:h-full">
+                      <MentosCard
+                        mentosSeq={item.mentosSeq}
+                        title={item.mentosTitle}
+                        price={item.mentosPrice}
+                        location={item.region}
+                        status="guest"
+                        imageUrl={item.mentosImg}
+                      />
+                    </div>
+                  ))}
+                  {pair.length === 1 && <div className="min-h-0 flex-1" />}
+                </div>
+              </section>
             ))}
-          </section>
+          </div>
 
           {hasNextPage && <div ref={loaderRef} className="mt-6 h-4 w-full" />}
 
@@ -234,7 +235,6 @@ export default function MentosList() {
         </div>
       </div>
 
-      {/* ✅ 포털로 로그인 모달 (뷰포트 기준) */}
       {typeof document !== "undefined" &&
         createPortal(
           <LoginSheet
@@ -243,10 +243,9 @@ export default function MentosList() {
             onSubmit={handleLoginSubmit}
             error={loginError}
             loading={isLoggingIn}
-            placement="container" // ← fixed 대신 container
+            placement="container"
             className="z-[9999]"
           />,
-          // ← 포털 타겟을 앱 화면 컨테이너로!
           (document.querySelector("[data-app-screen]") as HTMLElement) ??
             (document.getElementById("memento-sim-root") as HTMLElement) ??
             document.body,
