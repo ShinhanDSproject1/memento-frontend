@@ -307,7 +307,6 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
           reviewContent: content,
         });
         closeModal();
-
         if (res.code === 1000) {
           await queryClient.invalidateQueries({ queryKey: MY_MENTOS_QK });
           await mentee.refetch();
@@ -394,7 +393,10 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                     ? `${dateLabel}${item.region ? ` · ${item.region}` : ""}`
                     : item.region;
 
-                  const status = item.reviewCompleted ? "completed" : "pending";
+                  // ✅ 진행 상태 뱃지는 progressStatus 기준
+                  const status: "pending" | "completed" =
+                    item.progressStatus === "진행 완료" ? "completed" : "pending";
+
                   return (
                     <MentosCard
                       key={item.mentosSeq}
@@ -403,7 +405,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                       price={item.price}
                       location={locationLabel}
                       imageUrl={item.mentosImage}
-                      status={status as any}
+                      status={status}
                       role="menti"
                       onReviewClick={() =>
                         openModal("reviewMentos", {
@@ -430,7 +432,7 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
                             })
                       }
                       refundDisabled={!item.reservationSeq}
-                      reviewDisabled={item.reviewCompleted}
+                      reviewDisabled={item.reviewCompleted} // ✅ 리뷰 여부는 여기서 처리
                       reportDisabled={!!item.reportCompleted}
                       fixedHeight={cardH}
                     />
