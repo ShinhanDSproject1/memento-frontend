@@ -65,10 +65,7 @@ export default function ChatListPage() {
   );
 
   // ✅ role에 따른 배경 색상
-  const bgClass =
-    role === "menti"
-      ? "bg-gradient-to-b from-blue-50 to-blue-100"
-      : "bg-gradient-to-b from-green-50 to-green-100";
+  const bgClass = role === "menti" ? "bg-[#F7FAFF]" : "bg-[#F7FAFF]";
 
   return (
     <div

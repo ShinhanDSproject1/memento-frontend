@@ -8,7 +8,7 @@ import { updateMyPassword, useMyProfile, useUpdateMyProfile } from "@entities/pr
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-/* ✅ 추가: 공통 모달 훅/컴포넌트 + 탈퇴 API & 토큰 클리어 */
+/* ✅ 공통 모달 & 탈퇴 API/토큰 정리 */
 import { withdrawMember } from "@/entities/profile/api/withdrawMemeber";
 import { clearAccessToken, clearUserSnapshot } from "@/shared";
 import { useModal } from "@hooks/ui/useModal";
@@ -191,7 +191,7 @@ export default function MentorProfile() {
   /* ---------- loading / error ---------- */
   if (isLoading) {
     return (
-      <div className="font-WooridaumB flex min-h-dvh justify-center bg-gradient-to-b from-white to-emerald-200 antialiased">
+      <div className="font-WooridaumB flex min-h-dvh justify-center bg-[#F7FAFF] antialiased">
         <main className="min-h-dvh w-full bg-transparent px-4 py-8">
           <PageContainer>
             <div className="py-10 text-center text-sm text-gray-600">프로필을 불러오는 중…</div>
@@ -202,14 +202,14 @@ export default function MentorProfile() {
   }
   if (isError || !profile) {
     return (
-      <div className="font-WooridaumB flex min-h-dvh justify-center bg-gradient-to-b from-white to-emerald-200 antialiased">
+      <div className="font-WooridaumB flex min-h-dvh justify-center bg-[#F7FAFF] antialiased">
         <main className="min-h-dvh w-full bg-transparent px-4 py-8">
           <PageContainer>
             <div className="py-10 text-center text-sm text-red-500">
               프로필을 불러오지 못했습니다.
               <button
                 onClick={() => refetch()}
-                className="ml-2 rounded-lg bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700"
+                className="ml-2 rounded-lg bg-[#005EF9] px-3 py-1.5 text-white hover:bg-[#005EF9]"
                 type="button">
                 다시 시도
               </button>
@@ -222,14 +222,16 @@ export default function MentorProfile() {
 
   /* ---------- view ---------- */
   return (
-    <div className="font-WooridaumB flex min-h-dvh justify-center bg-gradient-to-b from-white to-emerald-200 antialiased">
-      {/* 투명 메인 + 카드 스타일 섹션 카드로 통일 */}
-      <main className="min-h-dvh w-full bg-transparent px-4 py-8">
+    <div className="font-WooridaumB flex min-h-screen justify-center bg-[#f5f6f8] antialiased">
+      {/* ⬆️ MyProfile 과 동일한 바깥 배경 */}
+
+      <main className="min-h-dvh w-full bg-[#F7FAFF] px-4 py-8 shadow">
         <PageContainer>
           {/* 내 프로필 */}
           <h2 className={headingCls}>내 프로필</h2>
           <section className="mb-8">
-            <SectionCard className="border-emerald-100">
+            <SectionCard>
+              {/* ⬆️ emerald 보더 제거해서 MyProfile 과 톤 통일 */}
               <FieldRow label="이름" htmlFor="name">
                 <CommonInput id="name" value={user.name} editable={false} />
               </FieldRow>
@@ -258,14 +260,14 @@ export default function MentorProfile() {
               <div className="flex justify-end">
                 {editProfile ? (
                   <button
-                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 md:text-base"
+                    className="cursor-pointer rounded-lg bg-[#005EF9] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005EF9] md:text-base"
                     onClick={handleProfileSave}
                     type="button">
                     수정 완료
                   </button>
                 ) : (
                   <button
-                    className="cursor-pointer rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 md:text-base"
+                    className="cursor-pointer rounded-lg bg-[#005EF9] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005EF9] md:text-base"
                     onClick={() => setEditProfile(true)}
                     type="button">
                     프로필 수정
@@ -278,7 +280,7 @@ export default function MentorProfile() {
           {/* 기본정보 */}
           <h2 className={headingCls}>기본정보</h2>
           <section className="mb-8">
-            <SectionCard className="border-emerald-100">
+            <SectionCard>
               <FieldRow label="아이디" htmlFor="userid">
                 <CommonInput id="userid" value={user.userid} editable={false} />
               </FieldRow>
@@ -295,7 +297,7 @@ export default function MentorProfile() {
                   </FieldRow>
                   <div className="flex justify-end">
                     <button
-                      className="cursor-pointer rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 md:text-base"
+                      className="cursor-pointer rounded-lg bg-[#005EF9] px-4 py-2 text-sm font-semibold text-white hover:bg-[#005EF9] md:text-base"
                       onClick={() => setEditInfo(true)}
                       type="button">
                       기본정보 변경
@@ -358,9 +360,9 @@ export default function MentorProfile() {
                     <button
                       type="button"
                       className={[
-                        "rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors md:text-base",
+                        "cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold text-white md:text-base",
                         canSubmit
-                          ? "cursor-pointer bg-emerald-600 hover:bg-emerald-700"
+                          ? "bg-[#005EF9] hover:bg-[#0C2D62]"
                           : "cursor-not-allowed bg-gray-300",
                       ].join(" ")}
                       disabled={!canSubmit}
@@ -376,28 +378,27 @@ export default function MentorProfile() {
           {/* 보유 자격증 */}
           <h2 className={headingCls}>보유 자격증</h2>
           <section className="mb-8">
-            <div className="rounded-xl border border-emerald-100 bg-white/90 px-5 py-4 text-sm leading-6 text-[#444] shadow-sm">
+            <div className="rounded-xl border border-gray-200 bg-white/90 px-5 py-4 text-sm leading-6 text-[#444] shadow-sm">
               {user.certs.length > 0 ? user.certs.join("  /  ") : "등록된 자격증이 없습니다."}
             </div>
 
             <div className="mt-4 flex items-start justify-between">
               <div className="flex flex-col gap-2">
                 <button
-                  className="cursor-pointer rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+                  className="cursor-pointer rounded-lg bg-[#005EF9] px-5 py-2 text-sm font-semibold text-white hover:bg-[#005EF9]"
                   onClick={handleEditIntro}
                   type="button">
                   소개글 수정
                 </button>
-                {/* 자격증 추가 버튼이 필요하면 주석 해제
+                {/* 필요 시 자격증 추가 버튼 활성화
                 <button
-                  className="cursor-pointer rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+                  className="cursor-pointer rounded-lg bg-[#005EF9] px-5 py-2 text-sm font-semibold text-white hover:bg-[#005EF9]"
                   onClick={() => navigate("/mento/certification")}
                   type="button">
                   자격증 추가
                 </button> */}
               </div>
 
-              {/* ✅ 계정 탈퇴 버튼 (텍스트 링크 유지) */}
               <button
                 className="w-fit cursor-pointer rounded-lg py-15 text-sm font-semibold text-black/80 underline underline-offset-2 hover:text-black"
                 type="button"

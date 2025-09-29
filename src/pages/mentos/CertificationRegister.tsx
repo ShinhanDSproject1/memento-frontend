@@ -1,14 +1,84 @@
 // src/pages/CertificationRegister.tsx
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+// ✅ react-pdf
+import { Document, Page, pdfjs } from "react-pdf";
+
+// ✅ Vite: 워커를 번들 자산으로 가져오기 (CORS/버전 문제 회피)
+import workerSrc from "react-pdf/node_modules/pdfjs-dist/build/pdf.worker.min.mjs?url";
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+
+// 프로젝트 컴포넌트
 import Button from "@/widgets/common/Button";
 import { FileInput, Label } from "flowbite-react";
-import React, { useCallback, useEffect, useState } from "react";
-
-import { useNavigate } from "react-router-dom";
 
 const ACCEPT_MIME = ["image/png", "image/jpeg", "image/jpg", "application/pdf"];
 const MAX_SIZE_MB = 5;
 
 type PreviewKind = "image" | "pdf" | null;
+
+/** PDF 미리보기: 컨테이너(60vh x 가로 100%)에 여백 없이 딱 맞추기 */
+function PdfPreviewFitBox({ file }: { file: File }) {
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const [scale, setScale] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<{ w: number; h: number } | null>(null);
+
+  // 박스 리사이즈 때마다 스케일 재계산
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      if (!pageSize) return;
+      const cw = el.clientWidth; // 패딩 없이 전체 폭
+      const ch = el.clientHeight; // 패딩 없이 전체 높이
+      const next = Math.min(cw / pageSize.w, ch / pageSize.h);
+      setScale(next > 0 ? next : 1);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [pageSize]);
+
+  // 첫 페이지 로드 시 원본 페이지 크기 → 초기 스케일 계산
+  const handlePageLoad = (pageProxy: any) => {
+    const vp = pageProxy.getViewport({ scale: 1 });
+    setPageSize({ w: vp.width, h: vp.height });
+
+    const el = boxRef.current;
+    if (el) {
+      const cw = el.clientWidth;
+      const ch = el.clientHeight;
+      const next = Math.min(cw / vp.width, ch / vp.height);
+      setScale(next > 0 ? next : 1);
+    }
+  };
+
+  return (
+    <div
+      ref={boxRef}
+      className="relative mx-auto w-full overflow-hidden rounded-xl bg-white"
+      style={{ height: "60vh" }} // 컨테이너 높이
+    >
+      <div className="flex h-full w-full items-center justify-center">
+        <Document
+          file={file}
+          loading={<p className="p-4 text-gray-600">PDF 로딩 중...</p>}
+          error={<p className="p-4 text-red-500">PDF 로드에 실패했습니다.</p>}
+          className="h-full w-full">
+          <Page
+            pageNumber={1}
+            scale={scale} // ✅ 가로/세로 모두에 맞춘 스케일
+            width={undefined}
+            height={undefined}
+            renderTextLayer={false}
+            renderAnnotationLayer={false}
+            onLoadSuccess={handlePageLoad}
+          />
+        </Document>
+      </div>
+    </div>
+  );
+}
 
 export default function CertificationRegister() {
   const navigate = useNavigate();
@@ -22,6 +92,7 @@ export default function CertificationRegister() {
   const [scanning, setScanning] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // 미리보기 URL 정리
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -39,9 +110,16 @@ export default function CertificationRegister() {
 
   const makePreview = (f: File) => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-    const url = URL.createObjectURL(f);
-    setPreviewUrl(url);
-    setPreviewKind(f.type === "application/pdf" ? "pdf" : "image");
+
+    if (f.type === "application/pdf") {
+      // PDF는 react-pdf에 File 객체로 직접 전달
+      setPreviewUrl(null);
+      setPreviewKind("pdf");
+    } else {
+      const url = URL.createObjectURL(f);
+      setPreviewUrl(url);
+      setPreviewKind("image");
+    }
   };
 
   const handleFilePicked = (f: File | null) => {
@@ -123,7 +201,6 @@ export default function CertificationRegister() {
 
       const [payload] = await Promise.all([req, delay(5000)]);
 
-      // ✅ name 값이 없으면 실패 페이지로
       if (!payload?.name) {
         navigate("/mento/certification/fail", { state: { ...payload, file } });
       } else {
@@ -155,23 +232,7 @@ export default function CertificationRegister() {
   };
 
   return (
-    <div className="flex min-h-[80vh] w-full flex-col justify-between gap-4 bg-white p-4 py-4">
-      {/* keyframes */}
-      <style>
-        {`
-        @keyframes scan-move {
-          0% { transform: translateY(-100%); opacity: 0.0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { transform: translateY(100%); opacity: 0.0; }
-        }
-        @keyframes glossy {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        `}
-      </style>
-
+    <div className="flex min-h-[80vh] w-full flex-col justify-between gap-4 bg-[#F7FAFF] p-4 py-4">
       {/* 제목 */}
       <div className="flex w-full">
         <p className="font-WooridaumB text-[21px] text-black">
@@ -189,7 +250,6 @@ export default function CertificationRegister() {
           onDragLeave={onDragLeave}
           className={[
             "relative",
-            // ⬇️ 드롭존 세로 확대
             "flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-10",
             "min-h-[340px] sm:min-h-[420px]",
             dragOver ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50",
@@ -197,7 +257,7 @@ export default function CertificationRegister() {
             "transition-colors",
           ].join(" ")}>
           <div className="flex w-full flex-col items-center justify-center px-3 pt-8 text-center">
-            {!previewUrl ? (
+            {!file ? (
               <>
                 <svg
                   className="mb-5 h-12 w-12 text-gray-500"
@@ -224,22 +284,16 @@ export default function CertificationRegister() {
               </>
             ) : (
               <div className="w-full">
-                <div className="relative mx-auto max-h-[60vh] w-full overflow-hidden rounded-xl">
+                <div className="relative mx-auto w-full overflow-visible rounded-xl">
+                  {/* ✅ 이미지 / PDF 미리보기 */}
                   {previewKind === "image" ? (
                     <img
-                      src={previewUrl}
+                      src={previewUrl!}
                       alt="미리보기 이미지"
                       className="mx-auto max-h-[60vh] w-auto object-contain"
                     />
                   ) : (
-                    <object
-                      data={previewUrl}
-                      type="application/pdf"
-                      className="mx-auto h-[60vh] w-full">
-                      <p className="text-xs text-gray-500">
-                        브라우저가 PDF 미리보기를 지원하지 않습니다. 파일을 다운로드해 확인해주세요.
-                      </p>
-                    </object>
+                    <PdfPreviewFitBox file={file} />
                   )}
 
                   {scanning && (
@@ -313,6 +367,22 @@ export default function CertificationRegister() {
           돌아가기
         </Button>
       </div>
+
+      {/* 효과용 keyframes */}
+      <style>
+        {`
+        @keyframes scan-move {
+          0% { transform: translateY(-100%); opacity: 0.0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { transform: translateY(100%); opacity: 0.0; }
+        }
+        @keyframes glossy {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        `}
+      </style>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { LoginSheet } from "@/widgets/home2/LoginSheet";
 import { useAuth } from "@entities/auth";
 import { Loader2, Send } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 const apiUrl = (path: string) => `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
@@ -15,8 +16,18 @@ const createUUID = () =>
 
 type Role = "mentee" | "mentor";
 
+// 서버 응답 타입(필요 부분만)
+type ChatIntroRes = { message?: string };
+type ChatPostRes = {
+  response?: string;
+  recommendation_ready?: boolean;
+  conversation_history?: string[];
+};
+
 export default function RecommendChatPage() {
   const { user, login } = useAuth();
+  const navigate = useNavigate();
+
   const isLoggedIn = !!user;
   const memberName = user?.memberName ?? "회원";
 
@@ -30,6 +41,10 @@ export default function RecommendChatPage() {
 
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
+
+  // ✅ 추천 버튼 노출 여부 & 질의 히스토리
+  const [recReady, setRecReady] = useState(false);
+  const [queries, setQueries] = useState<string[]>([]);
 
   const memberUUID = useMemo(() => createUUID(), []);
 
@@ -65,7 +80,7 @@ export default function RecommendChatPage() {
           signal: ac.signal,
         });
         if (!res.ok) throw new Error(`intro GET ${res.status}`);
-        const data = (await res.json()) as { message?: string };
+        const data = (await res.json()) as ChatIntroRes;
         const msg = data?.message?.trim();
         setBubbleText(msg || "서버연결이 원활하지 않습니다.\n잠시 후 다시 시도해 주세요.");
       } catch {
@@ -99,6 +114,8 @@ export default function RecommendChatPage() {
     }
 
     setPending(true);
+    setRecReady(false); // ✅ 새 요청마다 초기화
+    setQueries((prev) => [...prev, text]); // ✅ 질의 누적
     setBubbleText("답변을 준비중이에요…");
 
     try {
@@ -112,10 +129,23 @@ export default function RecommendChatPage() {
       });
 
       if (!res.ok) throw new Error(`chatbot POST ${res.status}`);
-      const data = (await res.json()) as { response?: string };
+      const data = (await res.json()) as ChatPostRes;
+
+      // 답변 표시
       setBubbleText(
         data?.response ?? `좋습니다, ${memberName}님!\n"${text}" 조건으로 계속 진행할게요.`,
       );
+
+      // ✅ 서버가 대화 히스토리를 내려주면 로컬 queries 반영
+      if (Array.isArray(data?.conversation_history) && data!.conversation_history!.length) {
+        setQueries(data!.conversation_history!);
+      }
+
+      // ✅ 추천 준비 완료면 버튼 활성화
+      if (data?.recommendation_ready) {
+        setRecReady(true);
+      }
+
       setInput("");
     } catch {
       setBubbleText("서버연결이 원활하지 않습니다.\n잠시 후 다시 시도해 주세요.");
@@ -124,13 +154,36 @@ export default function RecommendChatPage() {
     }
   };
 
+  // ✅ 추천 페이지로 이동 (질문 히스토리/사용자 세션 전달)
+  const goRecommend = () => {
+    navigate("/ai/recommend", {
+      state: {
+        from: "chatbot",
+        member_seq: memberUUID, // 서버가 이 세션키로 추천을 이어서 처리한다면
+        queries, // 다음 페이지에서 POST 바디로 그대로 전달
+      },
+    });
+  };
+
   return (
-    <main className="relative h-screen w-full px-4 pt-5 md:h-190">
+    <main className="relative h-screen w-full bg-[#F7FAFF] px-4 pt-5 md:h-190">
       <section className="mx-auto flex w-full max-w-md flex-col items-center gap-4">
         {/* ✅ HeroBubble에는 애니메이션된 텍스트를 표시 */}
         <HeroBubble text={displayedText} highlight={isLoggedIn ? memberName : undefined} />
         <CharacterFigure glowed={isLoggedIn} />
       </section>
+
+      {/* ✅ 추천 버튼 (recommendation_ready === true일 때만 노출) */}
+      {recReady && (
+        <section className="mx-auto mt-4 mb-2 w-full max-w-md">
+          <button
+            type="button"
+            onClick={goRecommend}
+            className="w-full rounded-xl bg-[#2563EB] px-4 py-3 text-center text-sm font-semibold text-white shadow hover:bg-[#1E4FD9]">
+            추천 받아보기
+          </button>
+        </section>
+      )}
 
       <section className="mx-auto mt-40 mb-3 w-full max-w-md md:mt-30">
         <div className="rounded-2xl bg-white/80 p-3 shadow ring-1 ring-black/5 backdrop-blur">

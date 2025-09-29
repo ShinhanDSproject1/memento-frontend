@@ -23,7 +23,7 @@ const getMemberSeq = () => {
 // ✨ 중앙 로딩 컴포넌트 (모노톤 AI 아이콘 + 글자)
 function LoadingAI() {
   return (
-    <div className="flex h-[50vh] flex-col items-center justify-center gap-4">
+    <div className="flex h-[50vh] flex-col items-center justify-center gap-4 bg-[#F7FAFF]">
       {/* 빛망울 */}
       <motion.div
         className="relative flex items-center justify-center"

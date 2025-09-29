@@ -1,11 +1,11 @@
 // src/pages/mentos/CertificationPage.tsx
+import { clearUserSnapshot } from "@/shared";
 import Button from "@/widgets/common/Button";
 import certificationSuccess from "@assets/images/certification/certification-success.svg";
+import { profileQueryKeys, useMyProfile } from "@entities/profile";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { useMyProfile, profileQueryKeys } from "@entities/profile";
-import { clearUserSnapshot } from "@/shared";
 
 // ✅ 분리한 API 모듈 사용
 import { registerCertification } from "@entities/certification/api/registerCertification";
@@ -120,7 +120,7 @@ const CertificationPage: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto flex min-h-[85vh] w-full max-w-3xl flex-col gap-6 px-4 py-6">
+    <div className="mx-auto flex min-h-[85vh] w-full max-w-3xl flex-col gap-6 bg-[#F7FAFF] px-4 py-6">
       {/* 헤더 */}
       <header>
         <h1 className="font-WooridaumB text-lg text-slate-900 sm:text-xl">

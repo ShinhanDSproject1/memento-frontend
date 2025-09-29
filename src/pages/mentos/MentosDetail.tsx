@@ -319,7 +319,7 @@ export default function MentosDetail() {
   const reviewCountText = Number(data.reviewTotalCnt ?? 0).toLocaleString();
 
   return (
-    <main className="relative flex w-full flex-col gap-5 bg-white">
+    <main className="relative flex w-full flex-col gap-5 bg-[#F7FAFF]">
       {/* 상단 이미지 */}
       <section className="flex h-[20%] w-full items-center justify-center">
         <img className="w-full" src={data.mentosImage} alt="mentos image" />

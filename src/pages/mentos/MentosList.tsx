@@ -173,7 +173,7 @@ export default function MentosList() {
   }
 
   return (
-    <div className="to-[#c2d2f1]font-sans min-h-screen bg-gradient-to-b from-[#F7FAFF] antialiased">
+    <div className="to-[#c2d2f1]font-sans min-h-screen bg-[#F7FAFF] antialiased">
       <div className="mx-auto min-h-screen max-w-md">
         {/* 타이틀 */}
         <div ref={headerRef} className="px-6 pb-2">

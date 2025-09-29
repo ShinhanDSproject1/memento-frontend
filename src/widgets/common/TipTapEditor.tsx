@@ -1,5 +1,4 @@
 import { SimpleEditor } from "@/widgets/common/tiptap-templates/simple/simple-editor";
-import "@app/styles/variables.css";
 
 function TipTapEditor() {
   return (

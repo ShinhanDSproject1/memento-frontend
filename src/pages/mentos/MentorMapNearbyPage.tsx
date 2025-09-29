@@ -121,7 +121,7 @@ export default function MentoNearbyPage() {
   const handleSearchArea = () => searchCurrentArea(); // 현재 영역 검색
 
   return (
-    <div className="mx-auto w-full max-w-[1000px] px-4 py-6">
+    <div className="mx-auto w-full max-w-[1000px] bg-[#F7FAFF] px-4 py-6">
       <h1 className="font-WooridaumB text-center text-[20px]">내 주변 멘토 찾기</h1>
       <p className="font-WooridaumB mt-1 text-center text-[13px] text-[#8B8888]">
         위치 기반 맞춤형 금융 전문가 매칭

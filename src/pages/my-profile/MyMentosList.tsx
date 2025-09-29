@@ -34,9 +34,7 @@ interface MyMentosListProps {
 
 /* ------------------------------ Constants ------------------------------ */
 const MY_MENTOS_QK = ["my-mentos-list"] as const; // 멘티 내역용
-const GAP_PX = 24; // (이제 안 써도 OK, 남겨도 무방)
 const PAGE_PADDING_BOTTOM = 0; // ← 화면 꽉 채우려면 0
-const PAGE_GAP = 16; // ← 페이지(섹션) 사이 간격(px)
 
 // 🔑 멘토 목록 쿼리키(훅과 동일한 limit 사용)
 const MENTO_LIMIT = 5;
@@ -148,12 +146,12 @@ const MyMentosList: FC<MyMentosListProps> = ({ role }) => {
   const theme =
     role === "mento"
       ? {
-          bg: "bg-gradient-to-b from-emerald-50 to-emerald-100",
-          title: "text-emerald-800",
-          button: "bg-emerald-600 hover:bg-emerald-700 text-white",
+          bg: "bg-[#F7FAFF]",
+          title: "text-[#1E3A8A]",
+          button: "bg-[#005EF9] hover:bg-[#0045c9] text-white",
         }
       : {
-          bg: "bg-[#F0F7FF]",
+          bg: "bg-[#F7FAFF]",
           title: "text-[#1E3A8A]",
           button: "bg-[#005EF9] hover:bg-[#0045c9] text-white",
         };
