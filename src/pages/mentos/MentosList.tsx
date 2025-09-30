@@ -16,9 +16,8 @@ import { useAuth } from "@entities/auth";
 import { createPortal } from "react-dom";
 
 const LIMIT = 5;
-const GAP_PX = 24;
-const PAGE_PADDING_BOTTOM = 0;
-const PAGE_GAP = 16;
+const CARD_GAP = 20; // 카드 간 갭
+
 const TITLE_MAP: Record<string, string> = {
   consumption: "소비패턴 멘토링",
   tips: "생활노하우 멘토링",
@@ -41,8 +40,8 @@ export default function MentosList() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
-  const [listH, setListH] = useState(0);
   const [cardH, setCardH] = useState(0);
+  const [containerH, setContainerH] = useState(0);
 
   const {
     data,
@@ -76,19 +75,28 @@ export default function MentosList() {
   }, [showLoginForm]);
 
   useEffect(() => {
-    const calcHeights = () => {
-      const titleBottom =
-        headerRef.current?.getBoundingClientRect().bottom ??
-        scrollRef.current?.getBoundingClientRect().top ??
-        0;
+    const calc = () => {
+      const titleBottom = headerRef.current?.getBoundingClientRect().bottom ?? 0;
       const viewportH = window.innerHeight;
-      const available = Math.max(0, viewportH - titleBottom - PAGE_PADDING_BOTTOM);
-      setListH(available);
-      setCardH(Math.floor((available - GAP_PX) / 2));
+      const scrollPadding = 32; // px-4의 양쪽 패딩 고려
+      const available = Math.max(0, viewportH - titleBottom - scrollPadding);
+
+      // 2개 카드 + 1개 갭이 들어갈 높이
+      const cardHeight = Math.floor((available - CARD_GAP) / 2);
+
+      setCardH(cardHeight);
+      setContainerH(available);
     };
-    calcHeights();
-    window.addEventListener("resize", calcHeights);
-    return () => window.removeEventListener("resize", calcHeights);
+
+    calc();
+    window.addEventListener("resize", calc);
+    const ro = new ResizeObserver(calc);
+    if (headerRef.current) ro.observe(headerRef.current);
+
+    return () => {
+      window.removeEventListener("resize", calc);
+      ro.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -176,14 +184,15 @@ export default function MentosList() {
     <div className="to-[#c2d2f1]font-sans min-h-screen bg-[#F7FAFF] antialiased">
       <div className="mx-auto min-h-screen max-w-md">
         {/* 타이틀 */}
-        <div ref={headerRef} className="px-6 pb-2">
+        <div ref={headerRef} className="px-6 pb-4">
           <MentosMainTitleComponent mainTitle={mainTitle} />
         </div>
-        {/* 스크롤 영역: 2장 스냅 */}
+
+        {/* 스크롤 영역 */}
         <div
           ref={scrollRef}
           className="snap-y snap-mandatory overflow-y-auto px-4"
-          style={listH ? { height: `${listH}px` } : undefined}>
+          style={containerH ? { height: `${containerH}px` } : undefined}>
           {isLoading && (
             <div className="flex items-center justify-center py-16 text-sm text-slate-600">
               멘토링을 불러오는 중...
@@ -202,29 +211,27 @@ export default function MentosList() {
           )}
 
           {empty && <div className="py-20 text-center text-slate-500">표시할 멘토링이 없어요.</div>}
-          <div className="space-y-4">
-            {pages.map((pair, idx) => (
-              <section
-                key={idx}
-                className="snap-start"
-                style={{ height: `calc(${listH}px - ${PAGE_GAP}px)` }}>
-                <div className="flex h-full flex-col gap-6">
-                  {pair.map((item) => (
-                    <div key={item.mentosSeq} className="min-h-0 flex-1 [&>*]:h-full">
-                      <MentosCard
-                        mentosSeq={item.mentosSeq}
-                        title={item.mentosTitle}
-                        price={item.mentosPrice}
-                        location={item.region}
-                        status="guest"
-                        imageUrl={item.mentosImg}
-                        approved={item.approved}
-                      />
-                    </div>
-                  ))}
-                  {pair.length === 1 && <div className="min-h-0 flex-1" />}
-                </div>
-              </section>
+
+          <div className="flex flex-col" style={{ gap: `${CARD_GAP}px` }}>
+            {pages.map((pair, pageIdx) => (
+              <div
+                key={`page-${pageIdx}`}
+                className="flex snap-start flex-col"
+                style={{ gap: `${CARD_GAP}px` }}>
+                {pair.map((item) => (
+                  <MentosCard
+                    key={item.mentosSeq}
+                    mentosSeq={item.mentosSeq}
+                    title={item.mentosTitle}
+                    price={item.mentosPrice}
+                    location={item.region}
+                    status="guest"
+                    imageUrl={item.mentosImg}
+                    approved={item.approved}
+                    fixedHeight={cardH}
+                  />
+                ))}
+              </div>
             ))}
           </div>
 

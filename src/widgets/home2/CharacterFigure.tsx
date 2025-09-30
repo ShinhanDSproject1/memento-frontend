@@ -1,4 +1,3 @@
-// src/widgets/home2/CharacterFigure.tsx
 import {
   default as characterGomBlue,
   default as characterGomGreen,

@@ -119,6 +119,7 @@ export default function RecommendChatPage() {
     setBubbleText("답변을 준비중이에요…");
 
     try {
+      setInput("");
       const res = await fetch(apiUrl("/ai/chatbot"), {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -172,7 +173,6 @@ export default function RecommendChatPage() {
         <HeroBubble text={displayedText} highlight={isLoggedIn ? memberName : undefined} />
         <CharacterFigure glowed={isLoggedIn} />
       </section>
-
       {/* ✅ 추천 버튼 (recommendation_ready === true일 때만 노출) */}
       {recReady && (
         <section className="mx-auto mt-4 mb-2 w-full max-w-md">

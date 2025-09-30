@@ -68,7 +68,7 @@ export default function CommonModal<K extends ModalKey>({
     <div
       style={{ scrollbarWidth: "none" }}
       className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/50">
-      <div className="flex w-full max-w-[270px] flex-col items-center gap-5 rounded-[10px] bg-white p-4">
+      <div className="flex w-full max-w-[270px] flex-col items-center gap-4 rounded-[10px] bg-white p-4">
         {isLoading ? (
           <>
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
@@ -80,7 +80,7 @@ export default function CommonModal<K extends ModalKey>({
             {(() => {
               const title = pickString(modalData, "title");
               return title ? (
-                <span className="px-4 pt-4 text-center text-[1.2rem] font-bold text-[#333]">
+                <span className="px-4 pt-2 text-center text-[16px] font-bold whitespace-pre-wrap text-[#333]">
                   {title}
                 </span>
               ) : null;

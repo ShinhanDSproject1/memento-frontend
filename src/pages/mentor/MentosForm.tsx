@@ -143,7 +143,7 @@ export default function MentosForm({
                   // Changed
                   form.category === opt.value
                     ? "bg-[#1161FF] text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    : "bg-sky-100 text-black hover:bg-gray-200"
                 }`}>
                 {opt.label}
               </button>

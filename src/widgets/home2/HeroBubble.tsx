@@ -147,12 +147,12 @@ export function HeroBubble({ text, highlight, rotateTexts, intervalMs = 30_000, 
   // ─────────────────────────────────────────────────────────────
   return (
     <motion.div
-      className="relative h-[132px] w-full overflow-hidden rounded-2xl border border-blue-200 bg-white/95 px-4 py-10 shadow-md backdrop-blur"
+      className="flex h-[160px] w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white/95 px-4 shadow-md backdrop-blur"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
       {/* 말풍선 텍스트 */}
-      <p className="text-center text-[15px] leading-6 whitespace-pre-line text-[#23272E]">
+      <p className="text-center text-[14px] leading-6 whitespace-pre-line text-[#23272E]">
         {renderWithHighlight(typed)}
         {!done && (
           <motion.span
@@ -172,12 +172,12 @@ export function HeroBubble({ text, highlight, rotateTexts, intervalMs = 30_000, 
         )}
       </p>
 
-      {/* ✅ 멘티만 표시 + /recommend(추천 리스트 페이지)에서는 숨김 (메인 기능 그대로) */}
-      {role === "mentee" && location.pathname !== "/recommend" && (
+      {/* 대화하기 버튼 (말풍선 오른쪽 하단) → /chat 페이지에서는 숨김 */}
+      {role == "mentee" && location.pathname !== "/recommend" && (
         <button
           type="button"
           onClick={() => navigate("/recommend")}
-          className="absolute right-3 bottom-3 inline-flex items-center justify-center gap-1.5 rounded-full border border-blue-300 bg-blue-400 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:border-blue-400 hover:bg-blue-500 hover:shadow-md">
+          className="absolute right-2 bottom-2 inline-flex items-center justify-center gap-1.5 rounded-full border border-blue-300 bg-blue-400 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:border-blue-400 hover:bg-blue-500 hover:shadow-md">
           대화하기
         </button>
       )}

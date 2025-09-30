@@ -161,7 +161,7 @@ export default function MyProfile() {
     if (modalType === "withdrawComplete") {
       closeModal();
       clearAccessToken(); // ✅ AT 정리
-      navigate("/login", { replace: true });
+      window.location.replace("/");
       return;
     }
 

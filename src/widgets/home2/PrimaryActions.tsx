@@ -16,7 +16,7 @@ export function PrimaryActions({
   const navigate = useNavigate();
 
   return (
-    <div className="mx-auto mb-5 flex w-full max-w-md flex-col gap-6 md:mb-10">
+    <div className="mx-auto mb-5 flex w-full max-w-md flex-col gap-6">
       {isLoggedIn && role === "mentee" ? (
         <>
           {/* 하단 블록: 내 주변 멘토찾기 + 3컬럼 버튼 */}
@@ -51,7 +51,7 @@ export function PrimaryActions({
               <button
                 type="button"
                 onClick={() => navigate("/menti/mymentos")}
-                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-300 bg-blue-100 px-3 py-4 text-xs font-medium text-blue-800 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-900 hover:shadow-md">
+                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-200 bg-blue-50 px-3 py-4 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-200 hover:text-blue-800 hover:shadow-md">
                 <img
                   src="/src/shared/assets/icons/icon-mymentoring.png"
                   alt="나의 멘토링"
@@ -63,7 +63,7 @@ export function PrimaryActions({
               <button
                 type="button"
                 onClick={() => navigate("/chat")}
-                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-300 bg-blue-100 px-3 py-4 text-xs font-medium text-blue-800 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-900 hover:shadow-md">
+                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-200 bg-blue-50 px-3 py-4 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-200 hover:text-blue-800 hover:shadow-md">
                 <img
                   src="/src/shared/assets/icons/icon-chat.png"
                   alt="멘토와 채팅"
@@ -165,7 +165,7 @@ export function PrimaryActions({
             <button
               type="button"
               onClick={onOpenLogin}
-              className="mb-10 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-[15px] font-semibold text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800 md:mb-7">
+              className="mb-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-[15px] font-semibold text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800">
               로그인
               <ArrowRight className="h-4 w-4" />
             </button>

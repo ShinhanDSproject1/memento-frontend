@@ -188,13 +188,8 @@ export default function MentorSignup() {
     }
   };
 
-  const selectedDate: Date | null =
-    birth.y && birth.m && birth.d
-      ? new Date(Number(birth.y), Number(birth.m) - 1, Number(birth.d))
-      : null;
-
   return (
-    <main className="mx-auto w-full max-w-md px-5 py-8">
+    <main className="mx-auto h-[calc(100vh-50px)] w-full max-w-md flex-col px-5 py-7 sm:h-[calc(100vh-140px)]">
       {/* 로고 + 인사 */}
       <div className="mb-5 text-center">
         <div className="flex items-center justify-center">
@@ -208,7 +203,7 @@ export default function MentorSignup() {
         </p>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="flex flex-col gap-4">
         {/* ID */}
         <label className="block">
           <input
@@ -311,7 +306,7 @@ export default function MentorSignup() {
               <button
                 type="button"
                 onClick={() => setIsCalOpen((v) => !v)}
-                className="flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#1161FF] shadow-sm hover:bg-slate-50">
+                className="flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold whitespace-nowrap text-[#1161FF] shadow-sm hover:bg-slate-50">
                 📅 선택
               </button>
 
@@ -342,7 +337,7 @@ export default function MentorSignup() {
                     openToDate={
                       birth.y && birth.m
                         ? new Date(Number(birth.y), Number(birth.m) - 1, 1)
-                        : new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+                        : new Date(new Date().getFullYear() - 20, 0, 1)
                     }
                   />
                 </div>
@@ -350,70 +345,6 @@ export default function MentorSignup() {
             </div>
           </div>
         </div>
-
-        {/* 자격증 여부 */}
-        <div>
-          <div className="mb-2 text-sm font-semibold text-slate-600">자격증 여부 확인</div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setCertOwn(true)}
-              className={[
-                "flex-1 rounded-full px-6 py-3 text-sm font-bold",
-                certOwn
-                  ? "bg-[#1161FF] text-white shadow-[0_6px_18px_rgba(17,97,255,0.25)]"
-                  : "bg-slate-200 text-slate-700",
-              ].join(" ")}>
-              보유
-            </button>
-            <button
-              type="button"
-              onClick={() => setCertOwn(false)}
-              className={[
-                "flex-1 rounded-full px-6 py-3 text-sm font-bold",
-                !certOwn
-                  ? "bg-[#1161FF] text-white shadow-[0_6px_18px_rgba(17,97,255,0.25)]"
-                  : "bg-slate-200 text-slate-700",
-              ].join(" ")}>
-              미보유
-            </button>
-          </div>
-        </div>
-
-        {/* 자격증 입력(보유 시) */}
-        {certOwn && (
-          <div className="mt-4 space-y-2">
-            <div className="text-xs text-slate-500">
-              * 새 API: 파일 자체는 업로드하지 않고 파일명과 자격증명만 전송합니다.
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                readOnly
-                value={certFile?.name || "자격증 파일 선택"}
-                className="flex-1 cursor-default rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-400"
-              />
-              <label className="inline-block cursor-pointer rounded-2xl bg-[#1161FF] px-4 py-3 text-sm font-bold text-white hover:bg-[#0C2D62]">
-                파일 선택
-                <input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  className="hidden"
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setCertFile(e.target.files?.[0] ?? null)
-                  }
-                />
-              </label>
-            </div>
-            <input
-              type="text"
-              placeholder="자격증 이름 (예: 금융자격증)"
-              value={certName}
-              onChange={(e) => setCertName(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none placeholder:text-slate-400 focus:border-[#2F6CFF] focus:shadow-[0_0_0_3px_rgba(47,108,255,0.15)]"
-            />
-          </div>
-        )}
 
         {/* 약관 동의 */}
         <label className="mt-2 flex items-center gap-3">

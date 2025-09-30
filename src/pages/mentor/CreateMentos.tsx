@@ -37,13 +37,13 @@ export default function CreateMentos() {
   // ✅ 모달 확인/취소 시 관리 페이지로 이동
   const handleConfirmClose = () => {
     closeModal();
-    navigate("/mento/my-list");
+    window.location.replace("/mento/my-list");
   };
 
   return (
-    <div className="flex min-h-full w-full justify-center overflow-x-hidden bg-[#F7FAFF] font-sans antialiased">
+    <div className="flex h-[calc(100vh-50px)] w-full justify-center overflow-x-hidden bg-[#F7FAFF] font-sans antialiased sm:h-[calc(100vh-140px)]">
       <section className="w-full overflow-x-hidden bg-[#F7FAFF] px-4 py-5 shadow">
-        <h1 className="font-WooridaumB mt-6 mb-15 pl-2 text-[20px] font-bold">멘토링 생성하기</h1>
+        <h1 className="font-WooridaumB mt-6 mb-9 pl-2 text-[20px] font-bold">멘토링 생성하기</h1>
 
         {/* ✅ 성공 모달: 확인 시 관리 페이지 이동 */}
         <CommonModal

@@ -232,7 +232,23 @@ export default function CertificationRegister() {
   };
 
   return (
-    <div className="flex min-h-[80vh] w-full flex-col justify-between gap-4 bg-[#F7FAFF] p-4 py-4">
+    <div className="flex h-[calc(100vh-150px)] w-full flex-col justify-between gap-4 p-4 py-4 sm:h-[calc(100vh-140px]">
+      {/* keyframes */}
+      <style>
+        {`
+        @keyframes scan-move {
+          0% { transform: translateY(-100%); opacity: 0.0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { transform: translateY(100%); opacity: 0.0; }
+        }
+        @keyframes glossy {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        `}
+      </style>
+
       {/* 제목 */}
       <div className="flex w-full">
         <p className="font-WooridaumB text-[21px] text-black">

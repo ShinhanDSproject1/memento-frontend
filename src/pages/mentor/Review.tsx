@@ -122,10 +122,9 @@ export default function Review() {
   }, [hasMore, loading, fetchMore]);
 
   return (
-    <div className="flex min-h-screen w-full justify-center bg-[#F7FAFF]">
+    <div className="flex h-[calc(100vh-50px)] w-full justify-center bg-[#F7FAFF] sm:h-[calc(100vh-140px)]">
       <section className="w-full max-w-4xl px-6 py-8">
-        <h1 className="font-WooridaumB text-black-800 mb-8 text-[22px] font-bold">리뷰 확인하기</h1>
-
+        <h1 className="font-WooridaumB mb-4 text-[22px] font-bold text-black">리뷰 확인하기</h1>
         <PageContainer className="space-y-6">
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow">

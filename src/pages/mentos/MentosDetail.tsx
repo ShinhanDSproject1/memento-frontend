@@ -324,7 +324,6 @@ export default function MentosDetail() {
       <section className="flex h-[20%] w-full items-center justify-center">
         <img className="w-full" src={data.mentosImage} alt="mentos image" />
       </section>
-
       {/* 타이틀, 위치, 시간, 별점 */}
       <section className="flex w-full flex-col gap-3 px-4">
         <p className="font-WooridaumB text-[1.2rem] font-bold">{data.mentosTitle}</p>
@@ -360,7 +359,6 @@ export default function MentosDetail() {
           </div>
         </div>
       </section>
-
       {/* 리뷰 캐러셀 */}
       <section className="w-full pt-6">
         {reviews.length > 0 ? (
@@ -398,14 +396,12 @@ export default function MentosDetail() {
           </div>
         )}
       </section>
-
       {/* 지도 섹션 */}
       <section className="flex w-full justify-center border-b border-b-zinc-100 px-4 py-2">
         <div className="w-full overflow-hidden rounded-xl border border-gray-200">
           <div ref={mapDivRef} id="mentos-detail-map" className="h-[220px] min-h-[220px] w-full" />
         </div>
       </section>
-
       {/* 멘토 소개 & 상세 설명 */}
       <section className="flex w-full justify-center px-4 pt-10">
         <div className="w-full max-w-sm">
@@ -442,22 +438,19 @@ export default function MentosDetail() {
           </div>
         </div>
       </section>
-
       {/* 하단 가격 + 버튼 / 멘토 안내 */}
-      <div className="flex w-full items-center gap-4 border-t border-t-zinc-100 p-4">
-        <div className="flex-1 text-center">
-          <span className="font-WooridaumB font-bold">
-            {Number(data.mentosPrice).toLocaleString()}원
-          </span>
-        </div>
-        {isMentor ? (
-          <div className="flex-1 text-center text-sm text-gray-500">멘토는 예약할 수 없습니다</div>
-        ) : (
+      {!isMentor && (
+        <div className="flex w-full items-center gap-4 border-t border-t-zinc-100 p-4">
+          <div className="flex-1 text-center">
+            <span className="font-WooridaumB font-bold">
+              {Number(data.mentosPrice).toLocaleString()}원
+            </span>
+          </div>
           <Button variant="primary" size="lg" className="flex-1" onClick={handleGoBooking}>
             예약하기
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ✅ 포털로 로그인 모달 (뷰포트 기준) */}
       {typeof document !== "undefined" &&

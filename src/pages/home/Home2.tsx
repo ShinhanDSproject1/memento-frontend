@@ -81,14 +81,15 @@ export default function HomePage({
 
   return (
     <main
-      className="relative flex h-screen w-full flex-col gap-10 overflow-hidden bg-[#F7FAFF] px-4 md:h-238 md:gap-20"
+      className="relative grid h-[calc(100vh-50px)] w-full grid-rows-[auto_1fr_auto] bg-[#F7FAFF] px-4 sm:h-[calc(100vh-140px)]"
       data-app-screen>
       {/* 상단 카테고리 */}
       <section className="mx-auto mt-3 w-full max-w-lg shrink-0">
         <CategoryButtonGroup />
       </section>
-      {/* 중앙 묶음 */}
-      <section className="mx-auto mt-2 flex w-full max-w-md flex-col items-center gap-4">
+
+      {/* 중앙 히어로 */}
+      <section className="mx-auto flex w-full max-w-md flex-col items-center justify-around">
         <HeroBubble
           text={`안녕하세요! 저는 메멘토의 AI 도우미 ‘${aiHelperName}’예요.`}
           highlight={memberName}

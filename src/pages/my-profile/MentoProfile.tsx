@@ -177,7 +177,7 @@ export default function MentorProfile() {
       closeModal();
       clearAccessToken();
       clearUserSnapshot();
-      navigate("/login", { replace: true });
+      window.location.replace("/");
       return;
     }
     // profileUpdated, withdrawFailed
@@ -222,10 +222,9 @@ export default function MentorProfile() {
 
   /* ---------- view ---------- */
   return (
-    <div className="font-WooridaumB flex min-h-screen justify-center bg-[#f5f6f8] antialiased">
-      {/* ⬆️ MyProfile 과 동일한 바깥 배경 */}
-
-      <main className="min-h-dvh w-full bg-[#F7FAFF] px-4 py-8 shadow">
+    <div className="font-WooridaumB flex min-h-dvh justify-center bg-[#F7FAFF] antialiased">
+      {/* 투명 메인 + 카드 스타일 섹션 카드로 통일 */}
+      <main className="min-h-dvh w-full bg-transparent px-4 py-8">
         <PageContainer>
           {/* 내 프로필 */}
           <h2 className={headingCls}>내 프로필</h2>
@@ -358,7 +357,6 @@ export default function MentorProfile() {
                       취소
                     </button>
                     <button
-                      type="button"
                       className={[
                         "cursor-pointer rounded-lg px-4 py-2 text-sm font-semibold text-white md:text-base",
                         canSubmit
@@ -366,7 +364,8 @@ export default function MentorProfile() {
                           : "cursor-not-allowed bg-gray-300",
                       ].join(" ")}
                       disabled={!canSubmit}
-                      onClick={handleInfoSave}>
+                      onClick={handleInfoSave}
+                      type="button">
                       변경 완료
                     </button>
                   </div>
@@ -385,7 +384,7 @@ export default function MentorProfile() {
             <div className="mt-4 flex items-start justify-between">
               <div className="flex flex-col gap-2">
                 <button
-                  className="cursor-pointer rounded-lg bg-[#005EF9] px-5 py-2 text-sm font-semibold text-white hover:bg-[#005EF9]"
+                  className="cursor-pointer rounded-lg bg-[#005EF9] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#005EF9]"
                   onClick={handleEditIntro}
                   type="button">
                   소개글 수정
@@ -400,7 +399,7 @@ export default function MentorProfile() {
               </div>
 
               <button
-                className="w-fit cursor-pointer rounded-lg py-15 text-sm font-semibold text-black/80 underline underline-offset-2 hover:text-black"
+                className="w-fit cursor-pointer rounded-lg pt-10 text-sm font-semibold text-black/80 underline underline-offset-2 hover:text-black"
                 type="button"
                 onClick={handleWithdrawClick}>
                 계정 탈퇴
