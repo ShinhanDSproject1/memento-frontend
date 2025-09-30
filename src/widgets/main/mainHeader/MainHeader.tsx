@@ -4,6 +4,7 @@ import loginIcon from "@assets/icons/icon-login.svg";
 import logo from "@assets/images/logo/memento-logo.svg";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 export interface MainHeaderProps {
   onClickLogin?: () => void;
   onClickHome?: () => void;
@@ -28,31 +29,53 @@ export default function MainHeader({ onClickHome }: MainHeaderProps) {
   const goHome = onClickHome ?? (() => window.location.replace("/"));
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between bg-white px-4 py-3 sm:px-6 lg:px-8">
+    <header
+      className={[
+        "sticky top-0 z-50 flex items-center justify-between bg-white px-4 py-3 sm:px-6 lg:px-8",
+        // ✅ 브라우저/웹뷰 자동 다크 요소(폼, 이미지 등) 무력화
+        "[color-scheme:light]",
+      ].join(" ")}>
       {/* 왼쪽 로고 */}
       <img
         src={logo}
         alt="memento logo"
-        className="h-auto w-[120px] cursor-pointer hover:brightness-60 sm:w-[140px] lg:w-[160px]"
         onClick={() => navigate("/")}
+        className={[
+          "h-auto w-[120px] cursor-pointer sm:w-[140px] lg:w-[160px]",
+          "transition duration-200 hover:brightness-90",
+          // ✅ 어떤 상황에서도 아이콘 색 반전/블렌드 금지
+          "mix-blend-normal filter-none dark:invert-0",
+          // ✅ 일부 웹뷰 엔진 전용(사파리/안드로이드) 필터 초기화
+          "[--tw-brightness:1] [--tw-contrast:1] [filter:none]",
+          "[-webkit-filter:none]",
+        ].join(" ")}
       />
 
       {/* 오른쪽 아이콘들 */}
       <div className="flex items-center gap-4">
-        <button type="button" onClick={goLogin} aria-label="login">
+        <button type="button" onClick={goLogin} aria-label="login" className="select-none">
           <img
             src={loginIcon}
             alt="loginIcon"
-            className="h-auto w-6 cursor-pointer transition duration-200 hover:brightness-60"
+            className={[
+              "h-6 w-6 cursor-pointer transition duration-200 hover:brightness-90",
+              // ✅ 항상 원본 그대로
+              "mix-blend-normal filter-none dark:invert-0",
+              "[--tw-brightness:1] [--tw-contrast:1] [filter:none]",
+              "[-webkit-filter:none]",
+            ].join(" ")}
           />
         </button>
-        {/* <button type="button" onClick={goHome} aria-label="go home">
+
+        {/* 홈 버튼을 다시 쓰려면 주석 해제
+        <button type="button" onClick={goHome} aria-label="go home" className="select-none">
           <img
             src={homeIcon}
             alt="homeIcon"
-            className="h-auto w-6 cursor-pointer transition duration-200 hover:brightness-60"
+            className="h-6 w-6 cursor-pointer transition duration-200 hover:brightness-90 filter-none mix-blend-normal dark:invert-0 [filter:none] [-webkit-filter:none]"
           />
-        </button> */}
+        </button>
+        */}
       </div>
 
       {/* ✅ 로그아웃 완료 모달 */}

@@ -1,8 +1,14 @@
 // src/pages/CertificationRegister.tsx
 import Button from "@/widgets/common/Button";
 import { FileInput, Label } from "flowbite-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+// ✅ pdf.js (모바일 호환 미리보기: 1페이지를 이미지로 렌더)
+import * as pdfjsLib from "pdfjs-dist";
+// Vite: 워커를 정적 자산으로 끌어와서 CORS 문제 회피
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 const ACCEPT_MIME = ["image/png", "image/jpeg", "image/jpg", "application/pdf"];
 const MAX_SIZE_MB = 5;
@@ -13,7 +19,7 @@ export default function CertificationRegister() {
   const navigate = useNavigate();
 
   const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null); // 이미지 dataURL 또는 objectURL
   const [previewKind, setPreviewKind] = useState<PreviewKind>(null);
 
   const [dragOver, setDragOver] = useState(false);
@@ -21,9 +27,10 @@ export default function CertificationRegister() {
   const [scanning, setScanning] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // 미리보기 정리
   useEffect(() => {
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
 
@@ -36,26 +43,78 @@ export default function CertificationRegister() {
     }
   };
 
-  const makePreview = (f: File) => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    const url = URL.createObjectURL(f);
-    setPreviewUrl(url);
-    setPreviewKind(f.type === "application/pdf" ? "pdf" : "image");
-  };
+  // ✅ PDF → 첫 페이지 이미지로 렌더 (모바일 100% 호환용)
+  const renderPdfFirstPageToImage = useCallback(async (blob: Blob): Promise<string> => {
+    const url = URL.createObjectURL(blob);
+    try {
+      const loadingTask = pdfjsLib.getDocument({ url });
+      const pdf = await loadingTask.promise;
+      const page = await pdf.getPage(1);
+
+      // 화면 가용폭에 맞춰 렌더 (너무 크지 않게)
+      const containerWidth = Math.min(window.innerWidth * 0.92, 640); // 여백 살짝
+      const viewport = page.getViewport({ scale: 1 });
+      const scale = containerWidth / viewport.width;
+      const scaled = page.getViewport({ scale: Math.max(0.5, Math.min(2.0, scale)) });
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d", { alpha: false })!;
+      canvas.width = Math.floor(scaled.width);
+      canvas.height = Math.floor(scaled.height);
+
+      const renderTask = page.render({ canvasContext: ctx, viewport: scaled });
+      await renderTask.promise;
+
+      // dataURL로 변환 (이미지 미리보기와 동일 경로)
+      return canvas.toDataURL("image/png");
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }, []);
+
+  const makePreview = useCallback(
+    async (f: File) => {
+      if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
+
+      if (f.type === "application/pdf") {
+        try {
+          const dataUrl = await renderPdfFirstPageToImage(f);
+          setPreviewUrl(dataUrl);
+          setPreviewKind("image"); // 이미지로 통일
+          return;
+        } catch {
+          // pdf.js 실패 시 object 태그로 폴백
+          const url = URL.createObjectURL(f);
+          setPreviewUrl(url);
+          setPreviewKind("pdf");
+          return;
+        }
+      }
+
+      // 이미지인 경우
+      const url = URL.createObjectURL(f);
+      setPreviewUrl(url);
+      setPreviewKind("image");
+    },
+    [previewUrl, renderPdfFirstPageToImage],
+  );
 
   const handleFilePicked = (f: File | null) => {
     if (!f) return;
-    try {
-      validateFile(f);
-      setFile(f);
-      setErrorMsg(null);
-      makePreview(f);
-    } catch (err: any) {
-      setFile(null);
-      setPreviewUrl(null);
-      setPreviewKind(null);
-      setErrorMsg(err?.message || "잘못된 파일입니다.");
-    }
+    (async () => {
+      try {
+        validateFile(f);
+        setFile(f);
+        setErrorMsg(null);
+        await makePreview(f);
+      } catch (err: any) {
+        setFile(null);
+        if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+        setPreviewKind(null);
+        setErrorMsg(err?.message || "잘못된 파일입니다.");
+      }
+    })();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,7 +179,7 @@ export default function CertificationRegister() {
         return payload;
       });
 
-      const [payload] = await Promise.all([req, delay(5000)]);
+      const [payload] = await Promise.all([req, delay(1500)]); // UX용 살짝 딜레이
 
       if (!payload?.name) {
         navigate("/mento/certification/fail", { state: { ...payload, file } });
@@ -146,14 +205,38 @@ export default function CertificationRegister() {
 
   const clearFile = () => {
     setFile(null);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
     setPreviewKind(null);
     setErrorMsg(null);
   };
 
+  // 애니메이션 사용 여부 (접근성)
+  const reducedMotion = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches,
+    [],
+  );
+
   return (
-    <div className="flex h-[calc(100vh-150px)] w-full flex-col justify-between gap-4 p-4 py-4 sm:h-[calc(100vh-140px]">
+    <div className="flex min-h-[calc(100dvh-150px)] w-full flex-col gap-6 p-4 sm:min-h-[calc(100dvh-140px)]">
+      {/* ✅ 모바일 친화 애니메이션 키프레임 (backdrop-filter 안씀) */}
+      <style>
+        {`
+        @keyframes scanMove {
+          0% { transform: translateY(-100%); opacity: 0.0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { transform: translateY(100%); opacity: 0.0; }
+        }
+        @keyframes glossy {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(50%); }
+        }
+        `}
+      </style>
+
       {/* 제목 */}
       <div className="flex w-full">
         <p className="font-WooridaumB text-[21px] text-black">
@@ -204,8 +287,7 @@ export default function CertificationRegister() {
                 <p className="text-sm text-gray-500">PNG, JPG, PDF (MAX. {MAX_SIZE_MB}MB)</p>
               </>
             ) : (
-              <div className="w-full">
-                {/* 미리보기 */}
+              <div className="relative mx-auto w-full">
                 {previewKind === "image" ? (
                   <img
                     src={previewUrl}
@@ -222,9 +304,31 @@ export default function CertificationRegister() {
                     </p>
                   </object>
                 )}
+
+                {/* 🔍 스캔 애니메이션 (모든 모바일 호환) */}
+                {scanning && !reducedMotion && (
+                  <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-md">
+                    {/* 어두운 마스크 */}
+                    <div className="absolute inset-0 bg-black/35" />
+                    {/* 스캐너 바 */}
+                    <div
+                      className="absolute right-0 left-0 h-[35%] bg-gradient-to-b from-transparent via-blue-500/90 to-transparent will-change-transform"
+                      style={{ animation: "scanMove 2.2s linear infinite" }}
+                    />
+                    {/* 글로시 라인 */}
+                    <div
+                      className="absolute top-0 left-1/2 h-full w-[140%] -translate-x-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent will-change-transform"
+                      style={{ animation: "glossy 1.8s linear infinite" }}
+                    />
+                    <div className="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-3 py-1 text-[11px] font-bold text-white shadow-lg">
+                      🔍 AI가 자격증을 스캔하는 중…
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
+
           <FileInput
             id="dropzone-file"
             className="hidden"
@@ -233,9 +337,9 @@ export default function CertificationRegister() {
           />
         </Label>
 
-        {/* 파일 없으면 안내 */}
+        {/* 파일 없으면 안내 (시각 강조 + 커서 표시) */}
         {!file && (
-          <p className="mt-2 text-sm font-medium text-red-600">
+          <p className="mt-2 animate-pulse text-sm font-semibold text-red-600">
             파일을 업로드해주세요. (PNG, JPG, PDF)
           </p>
         )}
@@ -257,14 +361,13 @@ export default function CertificationRegister() {
         </p>
       )}
 
-      <div className="flex flex-col items-center justify-center gap-2">
+      <div className="mt-auto flex flex-col items-center justify-center gap-2">
         <Button
           onClick={handleUpload}
           variant="primary"
-          className={`font-WooridaumB w-full px-8 py-4 font-bold ${!file ? "cursor-not-allowed bg-gray-300 text-gray-500" : ""} `}
+          className={`font-WooridaumB w-full px-8 py-4 font-bold ${!file ? "cursor-not-allowed bg-gray-300 text-gray-500" : ""}`}
           size="xl"
-          disabled={loading || scanning || !file} // ✅ 파일 없으면 비활성화
-        >
+          disabled={loading || scanning || !file}>
           {scanning ? "스캔 중..." : loading ? "업로드 중..." : "추가하기"}
         </Button>
       </div>

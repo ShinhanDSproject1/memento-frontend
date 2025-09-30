@@ -88,7 +88,7 @@ export const router = createBrowserRouter([
         children: [
           // ----- (1) 공개 라우트 -----
           { path: "/recommend", element: withSuspense(<RecommendChatPage />) },
-          { path: "/login", element: withSuspense(<Login />) },
+          // { path: "/login", element: withSuspense(<Login />) },
           { path: "/signup", element: withSuspense(<SignupSelect />) },
           { path: "/signup/mentor", element: withSuspense(<MentorSignup />) },
           { path: "/signup/mentee", element: withSuspense(<MenteeSignup />) },

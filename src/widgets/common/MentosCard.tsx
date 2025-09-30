@@ -154,7 +154,7 @@ export default function MentosCard(props: MentosCardProps) {
         <div
           className="relative w-full overflow-hidden bg-slate-100"
           style={{
-            height: fixedHeight ? Math.floor(fixedHeight * 0.56) : 180,
+            height: fixedHeight ? Math.floor(fixedHeight * 0.7) : 180,
           }}>
           {approved && (
             <div className="absolute top-[20px] right-[-35px] z-10 flex h-[35px] w-[140px] rotate-45 items-center justify-center overflow-hidden border-t border-r border-b border-l border-t-blue-500/80 border-r-blue-900/80 border-b-blue-900/80 border-l-blue-500/80 bg-gradient-to-br from-blue-500 to-[#1161ff]">
