@@ -21,7 +21,6 @@ export default function CertificationRegister() {
   const [scanning, setScanning] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // 미리보기 URL 정리
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -84,7 +83,7 @@ export default function CertificationRegister() {
 
   const handleUpload = async () => {
     if (!file) {
-      setErrorMsg("자격증을 업로드해주세요.");
+      setErrorMsg("파일을 업로드해주세요. (PNG, JPG, PDF)");
       return;
     }
 
@@ -123,7 +122,6 @@ export default function CertificationRegister() {
 
       const [payload] = await Promise.all([req, delay(5000)]);
 
-      // name 값이 없으면 실패 페이지로
       if (!payload?.name) {
         navigate("/mento/certification/fail", { state: { ...payload, file } });
       } else {
@@ -155,23 +153,7 @@ export default function CertificationRegister() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-150px)] w-full flex-col gap-6 p-4 sm:min-h-[calc(100vh-140px)]">
-      {/* keyframes */}
-      <style>
-        {`
-        @keyframes scan-move {
-          0% { transform: translateY(-100%); opacity: 0.0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { transform: translateY(100%); opacity: 0.0; }
-        }
-        @keyframes glossy {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        `}
-      </style>
-
+    <div className="flex h-[calc(100vh-150px)] w-full flex-col justify-between gap-4 p-4 py-4 sm:h-[calc(100vh-140px]">
       {/* 제목 */}
       <div className="flex w-full">
         <p className="font-WooridaumB text-[21px] text-black">
@@ -223,57 +205,26 @@ export default function CertificationRegister() {
               </>
             ) : (
               <div className="w-full">
-                <div className="relative mx-auto max-h-[60vh] w-full overflow-hidden rounded-xl">
-                  {previewKind === "image" ? (
-                    <img
-                      src={previewUrl}
-                      alt="미리보기 이미지"
-                      className="mx-auto max-h-[60vh] w-auto object-contain"
-                    />
-                  ) : (
-                    <object
-                      data={previewUrl}
-                      type="application/pdf"
-                      className="mx-auto h-[60vh] w-full">
-                      <p className="text-xs text-gray-500">
-                        브라우저가 PDF 미리보기를 지원하지 않습니다. 파일을 다운로드해 확인해주세요.
-                      </p>
-                    </object>
-                  )}
-
-                  {scanning && (
-                    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-md">
-                      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
-                      <div
-                        className="absolute inset-0 h-[40%] w-[150%] -rotate-6 bg-gradient-to-b from-transparent via-blue-500/90 to-transparent"
-                        style={{
-                          animation: "scan-move 3s linear infinite",
-                          boxShadow: "0 0 30px rgba(59,130,246,0.9), 0 0 80px rgba(59,130,246,0.6)",
-                        }}
-                      />
-                      <div
-                        className="absolute inset-0 bg-gradient-to-tr from-transparent via-blue-200/20 to-transparent"
-                        style={{
-                          backgroundSize: "200% 200%",
-                          animation: "glossy 2.5s linear infinite",
-                        }}
-                      />
-                      <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-4 py-1 text-xs font-bold whitespace-nowrap text-white shadow-lg shadow-blue-500/40">
-                        🔍 AI가 자격증을 스캔하는 중…
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {file && (
-                  <p className="mt-3 text-xs break-all text-gray-600">
-                    선택된 파일: <span className="font-medium">{file.name}</span>
-                  </p>
+                {/* 미리보기 */}
+                {previewKind === "image" ? (
+                  <img
+                    src={previewUrl}
+                    alt="미리보기 이미지"
+                    className="mx-auto max-h-[60vh] w-auto object-contain"
+                  />
+                ) : (
+                  <object
+                    data={previewUrl}
+                    type="application/pdf"
+                    className="mx-auto h-[60vh] w-full">
+                    <p className="text-xs text-gray-500">
+                      브라우저가 PDF 미리보기를 지원하지 않습니다. 파일을 다운로드해 확인해주세요.
+                    </p>
+                  </object>
                 )}
               </div>
             )}
           </div>
-
           <FileInput
             id="dropzone-file"
             className="hidden"
@@ -281,6 +232,13 @@ export default function CertificationRegister() {
             accept={ACCEPT_MIME.join(",")}
           />
         </Label>
+
+        {/* 파일 없으면 안내 */}
+        {!file && (
+          <p className="mt-2 text-sm font-medium text-red-600">
+            파일을 업로드해주세요. (PNG, JPG, PDF)
+          </p>
+        )}
 
         {file && !scanning && (
           <button
@@ -292,25 +250,22 @@ export default function CertificationRegister() {
         )}
       </div>
 
-      {errorMsg && <p className="text-sm text-red-500">{errorMsg}</p>}
+      {/* 에러 메시지 */}
+      {errorMsg && (
+        <p className="text-sm font-medium text-red-600" role="alert">
+          {errorMsg}
+        </p>
+      )}
 
-      {/* 버튼 영역: 본문 내부에 포함 + 필요 시 스크롤 */}
-      <div className="mt-auto flex flex-col items-center justify-center gap-2">
+      <div className="flex flex-col items-center justify-center gap-2">
         <Button
           onClick={handleUpload}
           variant="primary"
-          className="font-WooridaumB w-full px-8 py-4 font-bold"
+          className={`font-WooridaumB w-full px-8 py-4 font-bold ${!file ? "cursor-not-allowed bg-gray-300 text-gray-500" : ""} `}
           size="xl"
-          disabled={loading || !file || scanning}>
+          disabled={loading || scanning || !file} // ✅ 파일 없으면 비활성화
+        >
           {scanning ? "스캔 중..." : loading ? "업로드 중..." : "추가하기"}
-        </Button>
-        <Button
-          onClick={() => navigate("/mento")}
-          variant="cancelGray"
-          className="font-WooridaumB w-full px-8 py-4 font-bold"
-          size="xl"
-          disabled={scanning}>
-          돌아가기
         </Button>
       </div>
     </div>
