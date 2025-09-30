@@ -107,7 +107,7 @@ export default function BookingConfirm() {
 
   return (
     <div className="flex min-h-full w-full justify-center overflow-x-hidden bg-[#f5f6f8] font-sans antialiased">
-      <section className="w-full overflow-x-hidden bg-white px-4 py-5 shadow">
+      <section className="w-full overflow-x-hidden bg-[#F7FAFF] px-4 py-5 shadow">
         <h1 className="font-WooridaumB mt-6 mb-15 pl-2 text-[20px] font-bold">예약 내역</h1>
         <div className="px-2">
           <p className="font-WooridaumR mb-4 text-[16px] text-[#000008]">
