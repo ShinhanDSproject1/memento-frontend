@@ -136,38 +136,26 @@ export default function MentosCard(props: MentosCardProps) {
     }
   })();
 
-  // // 내부 비율: md에서 이미지를 더 줄이고 정보 영역을 늘림
-  // const hasActions = status === "completed" || status === "pending" || status === "mento";
-  // const imageBoxH = hasActions ? "h-[64%] md:h-[55%]" : "h-[72%] md:h-[63%]";
-  // const infoBoxH = hasActions ? "h-[36%] md:h-[45%]" : "h-[28%] md:h-[37%]";
-
-  // ✅ 역할에 따른 디테일 링크 분기 (필요시 동일 경로로 둘 수도 있음)
-
   const detailPath = `/menti/mentos-detail/${mentosSeq}`;
-
   const wrapperBase =
     "mx-auto w-full max-w-[400px] snap-start overflow-hidden rounded-2xl bg-white/90 " +
     "backdrop-blur-[1px] shadow-[0_6px_18px_-8px_rgba(2,6,23,0.20)] ring-1 ring-slate-200 " +
     "transition-transform active:scale-[0.997] focus-within:ring-0 content-visibility-auto will-change-transform";
 
-  // const wrapperHeightClass = fixedHeight
-  //   ? "[height:var(--card-h)] md:[height:calc(var(--card-h)*0.88)]"
-  //   : "";
-
   return (
     <div
       className={wrapperBase}
-      style={
-        fixedHeight
-          ? { height: fixedHeight, overflow: "hidden" } // ← 실제 높이 강제 + 넘침 방지
-          : undefined
-      }>
+      style={fixedHeight ? { height: fixedHeight, overflow: "hidden" } : undefined}>
       <Link
         to={detailPath}
         className="flex h-full flex-col outline-none focus-visible:outline-none"
         style={{ WebkitTapHighlightColor: "transparent" }}>
         {/* 썸네일 */}
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 md:aspect-[16/9]">
+        <div
+          className="relative w-full overflow-hidden bg-slate-100"
+          style={{
+            height: fixedHeight ? Math.floor(fixedHeight * 0.56) : 180,
+          }}>
           {approved && (
             <div className="absolute top-[20px] right-[-35px] z-10 flex h-[35px] w-[140px] rotate-45 items-center justify-center overflow-hidden border-t border-r border-b border-l border-t-blue-500/80 border-r-blue-900/80 border-b-blue-900/80 border-l-blue-500/80 bg-gradient-to-br from-blue-500 to-[#1161ff]">
               <div className="font-WooridaumB text-center text-[16px] text-white">EXPERT</div>

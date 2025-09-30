@@ -43,6 +43,9 @@ export default function MentosList() {
   const [cardH, setCardH] = useState(0);
   const [containerH, setContainerH] = useState(0);
 
+  // 스크롤 위치 저장
+  const scrollPosRef = useRef(0);
+
   const {
     data,
     isLoading,
@@ -74,6 +77,25 @@ export default function MentosList() {
     showLoginFormRef.current = showLoginForm;
   }, [showLoginForm]);
 
+  // 스크롤 위치 복원
+  useEffect(() => {
+    const scrollEl = scrollRef.current;
+    if (!scrollEl) return;
+
+    // 컴포넌트 마운트 시 저장된 스크롤 위치로 복원
+    if (scrollPosRef.current > 0) {
+      scrollEl.scrollTop = scrollPosRef.current;
+    }
+
+    // 스크롤 이벤트로 위치 저장
+    const handleScroll = () => {
+      scrollPosRef.current = scrollEl.scrollTop;
+    };
+
+    scrollEl.addEventListener("scroll", handleScroll, { passive: true });
+    return () => scrollEl.removeEventListener("scroll", handleScroll);
+  }, []);
+
   useEffect(() => {
     const calc = () => {
       const titleBottom = headerRef.current?.getBoundingClientRect().bottom ?? 0;
@@ -90,11 +112,30 @@ export default function MentosList() {
 
     calc();
     window.addEventListener("resize", calc);
+
+    // 페이지 포커스 시 재계산 (뒤로가기 대응)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        setTimeout(calc, 0);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // 페이지쇼 이벤트로도 재계산 (브라우저 캐시에서 복원 시)
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        setTimeout(calc, 0);
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+
     const ro = new ResizeObserver(calc);
     if (headerRef.current) ro.observe(headerRef.current);
 
     return () => {
       window.removeEventListener("resize", calc);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pageshow", handlePageShow);
       ro.disconnect();
     };
   }, []);
