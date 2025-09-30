@@ -155,7 +155,7 @@ export default function CertificationRegister() {
   };
 
   return (
-    <div className="flex min-h-[80vh] w-full flex-col justify-between gap-4 bg-white p-4 py-4">
+    <div className="flex h-[calc(100vh-150px)] w-full flex-col justify-between gap-4 p-4 py-4 sm:h-[calc(100vh-140px]">
       {/* keyframes */}
       <style>
         {`
