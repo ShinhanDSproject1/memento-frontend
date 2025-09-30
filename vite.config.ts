@@ -1,123 +1,101 @@
+// vite.config.ts
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import flowbiteReact from "flowbite-react/plugin/vite";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { defineConfig, loadEnv } from "vite";
-import mkcert from "vite-plugin-mkcert";
+import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-
+const isProd = process.env.NODE_ENV === "production";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const r = (p: string) => path.resolve(__dirname, p);
-
-// dev https cert 안전 로딩 함수 (develop 브랜치 장점)
+// dev에서만 동적 import (Node 18+ 가정)
+const mkcert = !isProd ? (await import("vite-plugin-mkcert")).default : undefined;
+// dev https cert 안전 로딩
 function devHttps() {
+  if (isProd) return undefined;
   try {
     const key = fs.readFileSync("localhost-key.pem");
     const cert = fs.readFileSync("localhost.pem");
     return { key, cert };
   } catch {
-    // 인증서가 없으면 https를 사용하지 않음
+    // 인증서가 없으면 http로 구동
     return undefined;
   }
 }
-
-export default defineConfig(({ mode }) => {
-  // 현재 모드에 맞는 .env 파일을 로드
-  const env = loadEnv(mode, process.cwd(), "");
-  const isProd = mode === "production";
-
-  return {
-    plugins: [
-      react(),
-      tailwindcss(),
-      flowbiteReact(),
-      tsconfigPaths(),
-      // 프로덕션 모드가 아닐 때만 mkcert 플러그인 활성화
-      !isProd ? mkcert() : undefined,
-    ],
-    resolve: {
-      alias: {
-        "@": r("src"),
-        "@app": r("src/app"),
-        "@pages": r("src/pages"),
-        "@widgets": r("src/widgets"),
-        "@features": r("src/features"),
-        "@entities": r("src/entities"),
-        "@shared": r("src/shared"),
-        "@assets": r("src/shared/assets"),
-        "@hooks": r("src/shared/hooks"),
-        "@lib": r("src/shared/lib"),
-        "@ui": r("src/shared/ui"),
-        "@api": r("src/shared/api"),
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
+    flowbiteReact(),
+    tsconfigPaths(),
+    ...(isProd ? [] : [mkcert!()]),
+  ],
+  resolve: {
+    alias: {
+      "@": r("src"),
+      "@app": r("src/app"),
+      "@pages": r("src/pages"),
+      "@features": r("src/features"),
+      "@widgets": r("src/widgets"),
+      "@entities": r("src/entities"),
+      "@shared": r("src/shared"),
+      "@assets": r("src/shared/assets"),
+      "@hooks": r("src/shared/hooks"),
+      "@lib": r("src/shared/lib"),
+      "@ui": r("src/shared/ui"),
+      "@api": r("src/shared/api"),
+    },
+  },
+  define: { global: "window" },
+  server: {
+    https: devHttps(),
+    host: true,
+    port: 3000,
+    proxy: {
+      // :흰색_확인_표시: 1) 더 구체적인 규칙을 먼저: /api/ai/** → 192.168.0.180:8001
+      "/api/ai": {
+        target: "http://192.168.0.180:8001",
+        changeOrigin: true,
+        secure: false,
+        // /api/ 를 제거해서 /api/ai/chatbot/1 → /ai/chatbot/1 로 전달
+        rewrite: (p) => p.replace(/^\/api/, ""),
       },
-    },
-    define: {
-      global: "window",
-    },
-    server: {
-      https: devHttps(),
-      host: true,
-      port: 3000,
-      open: "/memento-finance",
-      proxy: {
-        "/api/ai": {
-          target: "http://192.168.0.180:8001",
-          changeOrigin: true,
-          secure: false,
-          rewrite: (p) => p.replace(/^\/api/, ""),
-        },
-
-        "/api": {
-          target: env.VITE_PROXY_TARGET,
-          changeOrigin: true,
-          secure: false,
-          cookieDomainRewrite: "localhost",
-          configure: (proxy) => {
-            proxy.on("proxyRes", (proxyRes) => {
-              const setCookie = proxyRes.headers["set-cookie"];
-              if (!setCookie) return;
-
-              const list = Array.isArray(setCookie) ? setCookie : [setCookie];
-              proxyRes.headers["set-cookie"] = list.map((c) => {
-                let v = c;
-                v = v.replace(/;\s*SameSite=[^;]*/i, ""); // 기존 SameSite 제거
-                if (!/;\s*Secure/i.test(v)) v += "; Secure";
-                if (!/;\s*SameSite=/i.test(v)) v += "; SameSite=None";
-                if (!/;\s*Path=/i.test(v)) v += "; Path=/";
-                return v;
-              });
+      "/api": {
+        target: "https://memento.shinhanacademy.co.kr",
+        changeOrigin: true,
+        secure: true, // 셀프사인이면 false
+        cookieDomainRewrite: "localhost",
+        configure: (proxy) => {
+          proxy.on("proxyRes", (proxyRes) => {
+            const setCookie = proxyRes.headers["set-cookie"];
+            if (!setCookie) return;
+            const list = Array.isArray(setCookie) ? setCookie : [setCookie];
+            proxyRes.headers["set-cookie"] = list.map((c) => {
+              let v = c.replace(/;\s*SameSite=[^;]*/i, ""); // SameSite 제거 후
+              if (!/;\s*Secure/i.test(v)) v += "; Secure";
+              if (!/;\s*SameSite=/i.test(v)) v += "; SameSite=None";
+              if (!/;\s*Path=/i.test(v)) v += "; Path=/";
+              return v;
             });
-          },
-        },
-
-        // WebSocket 프록시 규칙
-        "/ws/chat": {
-          target: env.VITE_PROXY_TARGET.replace(/^http/, "ws"), // http -> ws
-          ws: true,
-          changeOrigin: true,
-          secure: false,
-        },
-
-        // Stomp WebSocket 프록시 규칙
-        "/ws-stomp": {
-          target: "https://memento.shinhanacademy.co.kr",
-          changeOrigin: true,
-          secure: true,
-          ws: true,
-        },
-
-        // Python 서버 프록시 규칙
-        "/py": {
-          target: "http://192.168.0.180:8001",
-          changeOrigin: true,
-          secure: false,
-          rewrite: (p) => p.replace(/^\/py/, ""),
+          });
         },
       },
+      "/py": {
+        target: "http://192.168.0.180:8001",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (p) => p.replace(/^\/py/, ""),
+      },
+      "/ws-stomp": {
+        target: "https://memento.shinhanacademy.co.kr",
+        changeOrigin: true,
+        secure: true, // 셀프사인이면 false
+        ws: true,
+      },
     },
-    assetsInclude: ["**/*.mp4", "**/*.ttf"],
-  };
+  },
+  assetsInclude: ["**/*.mp4", "**/*.ttf"],
 });

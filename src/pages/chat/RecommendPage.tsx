@@ -158,11 +158,6 @@ export default function RecommendPage() {
         {/* 헤더 */}
         <div className="flex shrink-0 items-center justify-between py-3">
           <h1 className="text-lg font-semibold text-black">맞춤 추천</h1>
-          <button
-            onClick={() => navigate(-1)}
-            className="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-black/5">
-            뒤로
-          </button>
         </div>
 
         {/* 본문 */}

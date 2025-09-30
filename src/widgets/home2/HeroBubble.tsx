@@ -10,7 +10,7 @@ type Props = {
   highlight?: string; // 유저네임
   rotateTexts?: string[];
   intervalMs?: number;
-  role?: Role;
+  role?: Role; // ✅ 로그인 시 mentee/mentor, 게스트면 보통 undefined
 };
 
 export function HeroBubble({ text, highlight, rotateTexts, intervalMs = 30_000, role }: Props) {
@@ -21,7 +21,12 @@ export function HeroBubble({ text, highlight, rotateTexts, intervalMs = 30_000, 
   const timer = useRef<number | null>(null);
   const i = useRef(0);
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ 현재 경로 확인
+  const location = useLocation();
+
+  // ✅ RecommendChatPage(추천 챗봇)일 때만 특별 레이아웃 적용
+  //   - 예: /chat/recommend, /recommend-chat 등의 경로를 폭넓게 커버
+  const isRecommendChat =
+    /\/chat\/?[^/]*recommend/i.test(location.pathname) || location.pathname === "/recommend";
 
   useEffect(() => {
     if (!rotateTexts || rotateTexts.length === 0) {
@@ -96,6 +101,50 @@ export function HeroBubble({ text, highlight, rotateTexts, intervalMs = 30_000, 
     return result;
   };
 
+  // ─────────────────────────────────────────────────────────────
+  // 추천 챗봇 페이지 전용 뷰(말풍선 더 크게 + 상단 정렬 + 내용 스크롤)
+  // ─────────────────────────────────────────────────────────────
+  if (isRecommendChat) {
+    return (
+      <motion.div
+        className="flex h-[270px] w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white/95 px-4 shadow-md backdrop-blur"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
+        {/* 스크롤 가능한 텍스트 컨테이너(상단 정렬) */}
+        <div
+          className="mx-auto flex h-full max-w-[720px] cursor-text touch-pan-y items-center overflow-auto pr-1 text-center text-[15px] leading-6 text-[#23272E] select-text [scrollbar-gutter:stable]"
+          // 드래그 스크롤이 자연스럽게 되도록 텍스트만 감싼 div에 overflow-auto 부여
+        >
+          <div className="whitespace-pre-line">
+            {renderWithHighlight(typed)}
+            {!done && (
+              <motion.span
+                aria-hidden
+                className="ml-1 inline-block h-[1em] w-[2px] bg-[#23272E] align-[-0.2em]"
+                animate={{ opacity: [0, 1, 0] }}
+                transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
+              />
+            )}
+            {done && (
+              <motion.span
+                aria-hidden
+                className="ml-1 inline-block h-[1em] w-[2px] bg-[#23272E] align-[-0.2em]"
+                animate={{ opacity: [0, 1, 0] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* ✅ 추천 챗봇 페이지에서는 '대화하기' 버튼 없음 (메인 기능 불변) */}
+      </motion.div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // 기본(메인 등) 뷰 — 기존 스타일/기능 그대로 유지
+  // ─────────────────────────────────────────────────────────────
   return (
     <motion.div
       className="flex h-[160px] w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white/95 px-4 shadow-md backdrop-blur"

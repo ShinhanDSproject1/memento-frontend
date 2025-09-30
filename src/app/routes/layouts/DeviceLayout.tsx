@@ -11,7 +11,7 @@ export default function DeviceSimulator({
       <div className="block sm:hidden">{children}</div>
 
       {/* md 이상일 때만 폰 시뮬레이터 보이기 */}
-      <div className="hidden min-h-screen w-full items-center justify-center p-4 text-slate-900 sm:flex">
+      <div className="hidden min-h-screen w-full items-center justify-center text-slate-900 sm:flex">
         {/* 📱 폰 외곽 프레임 */}
         <div
           className={[
