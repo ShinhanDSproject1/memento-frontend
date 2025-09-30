@@ -88,7 +88,7 @@ export default function HomePage({
 
   return (
     <main
-      className="relative grid h-[calc(100vh-50px)] w-full grid-rows-[auto_1fr_auto] bg-[#F7FAFF] px-4 sm:h-[calc(100vh-140px)]"
+      className="relative grid h-[calc(100vh-48px)] w-full grid-rows-[auto_1fr_auto] bg-[#F7FAFF] px-4"
       data-app-screen>
       {/* 상단 카테고리 */}
       <section className="mx-auto mt-5 w-full max-w-lg">
