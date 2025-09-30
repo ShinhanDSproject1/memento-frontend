@@ -320,8 +320,8 @@ export default function CertificationRegister() {
                       className="absolute top-0 left-1/2 h-full w-[140%] -translate-x-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent will-change-transform"
                       style={{ animation: "glossy 1.8s linear infinite" }}
                     />
-                    <div className="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-3 py-1 text-[11px] font-bold text-white shadow-lg">
-                      🔍 AI가 자격증을 스캔하는 중…
+                    <div className="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-3 py-1 text-[9px] font-bold whitespace-nowrap text-white shadow-lg md:text-[11px]">
+                      🔍 AI가 자격증을 스캔하는중…
                     </div>
                   </div>
                 )}
