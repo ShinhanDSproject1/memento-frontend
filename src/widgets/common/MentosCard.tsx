@@ -77,6 +77,9 @@ export default function MentosCard(props: MentosCardProps) {
       case "completed": {
         const isReviewDisabled = !!reviewDisabled;
         const isReportDisabled = !!reportDisabled;
+        const imgRatio = 0.56;
+        const imgH = fixedHeight ? Math.floor(fixedHeight * imgRatio) : undefined;
+        const infoH = fixedHeight && imgH ? fixedHeight - imgH : undefined;
         return (
           <>
             <Button
@@ -147,16 +150,16 @@ export default function MentosCard(props: MentosCardProps) {
     "backdrop-blur-[1px] shadow-[0_6px_18px_-8px_rgba(2,6,23,0.20)] ring-1 ring-slate-200 " +
     "transition-transform active:scale-[0.997] focus-within:ring-0 content-visibility-auto will-change-transform";
 
-  const wrapperHeightClass = fixedHeight
-    ? "[height:var(--card-h)] md:[height:calc(var(--card-h)*0.88)]"
-    : "";
+  // const wrapperHeightClass = fixedHeight
+  //   ? "[height:var(--card-h)] md:[height:calc(var(--card-h)*0.88)]"
+  //   : "";
 
   return (
     <div
-      className={`${wrapperBase} ${wrapperHeightClass}`}
+      className={wrapperBase}
       style={
         fixedHeight
-          ? ({ ["--card-h" as any]: `${fixedHeight}px` } as React.CSSProperties)
+          ? { height: fixedHeight, overflow: "hidden" } // ← 실제 높이 강제 + 넘침 방지
           : undefined
       }>
       <Link
@@ -190,7 +193,7 @@ export default function MentosCard(props: MentosCardProps) {
 
         {/* 정보 */}
         <div className="flex flex-1 flex-col justify-between gap-2 px-3.5 py-3">
-          <h3 className="font-WooridaumB line-clamp-2 text-[14px] leading-snug font-semibold tracking-[-0.2px] break-keep text-slate-900">
+          <h3 className="font-WooridaumB line-clamp-2 text-[17px] leading-snug font-semibold tracking-[-0.2px] break-keep text-slate-900">
             {title}
           </h3>
           <div className="flex items-center justify-between">
