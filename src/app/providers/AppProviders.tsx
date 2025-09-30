@@ -12,13 +12,13 @@ export default function AppProviders({ children }: PropsWithChildren) {
     <QueryProvider>
       <AuthProvider>
         {USE_SIMULATOR ? (
-          <DeviceSimulator showStatusBar>
+          <DeviceSimulator enabled={false}>
             {/* ✅ 시뮬레이터 내부에서 모달 Provider를 감싼다 */}
             <LoginSheetProvider>{children}</LoginSheetProvider>
           </DeviceSimulator>
         ) : (
           // 모바일/실기기 모드에선 평소대로
-          <DeviceSimulator showStatusBar>
+          <DeviceSimulator enabled={false}>
             {/* ✅ 시뮬레이터 내부에서 모달 Provider를 감싼다 */}
             <LoginSheetProvider>{children}</LoginSheetProvider>
           </DeviceSimulator>

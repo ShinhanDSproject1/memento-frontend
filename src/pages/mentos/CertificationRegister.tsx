@@ -2,7 +2,6 @@
 import Button from "@/widgets/common/Button";
 import { FileInput, Label } from "flowbite-react";
 import React, { useCallback, useEffect, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
 
 const ACCEPT_MIME = ["image/png", "image/jpeg", "image/jpg", "application/pdf"];
@@ -22,6 +21,7 @@ export default function CertificationRegister() {
   const [scanning, setScanning] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // 미리보기 URL 정리
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -123,7 +123,7 @@ export default function CertificationRegister() {
 
       const [payload] = await Promise.all([req, delay(5000)]);
 
-      // ✅ name 값이 없으면 실패 페이지로
+      // name 값이 없으면 실패 페이지로
       if (!payload?.name) {
         navigate("/mento/certification/fail", { state: { ...payload, file } });
       } else {
@@ -155,7 +155,7 @@ export default function CertificationRegister() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-150px)] w-full flex-col justify-between gap-4 p-4 py-4 sm:h-[calc(100vh-140px]">
+    <div className="flex min-h-[calc(100vh-150px)] w-full flex-col gap-6 p-4 sm:min-h-[calc(100vh-140px)]">
       {/* keyframes */}
       <style>
         {`
@@ -189,7 +189,6 @@ export default function CertificationRegister() {
           onDragLeave={onDragLeave}
           className={[
             "relative",
-            // ⬇️ 드롭존 세로 확대
             "flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-10",
             "min-h-[340px] sm:min-h-[420px]",
             dragOver ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50",
@@ -295,7 +294,8 @@ export default function CertificationRegister() {
 
       {errorMsg && <p className="text-sm text-red-500">{errorMsg}</p>}
 
-      <div className="flex flex-col items-center justify-center gap-2">
+      {/* 버튼 영역: 본문 내부에 포함 + 필요 시 스크롤 */}
+      <div className="mt-auto flex flex-col items-center justify-center gap-2">
         <Button
           onClick={handleUpload}
           variant="primary"

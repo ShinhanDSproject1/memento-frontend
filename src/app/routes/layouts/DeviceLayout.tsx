@@ -4,7 +4,17 @@ export default function DeviceSimulator({
   children,
   showStatusBar = true,
   rounded = true,
-}: PropsWithChildren<{ showStatusBar?: boolean; rounded?: boolean }>) {
+  enabled = true, // ✅ 추가: 시뮬레이터 켜고 끄는 옵션
+}: PropsWithChildren<{
+  showStatusBar?: boolean;
+  rounded?: boolean;
+  enabled?: boolean;
+}>) {
+  // enabled = false면 그냥 children만 반환
+  if (!enabled) {
+    return <div className="min-h-screen w-full bg-gray-100">{children}</div>;
+  }
+
   return (
     <div className="min-h-screen w-full bg-gray-100">
       {/* 모바일에서는 그대로 children 출력 */}
@@ -55,7 +65,7 @@ export default function DeviceSimulator({
                 "overflow-hidden bg-white",
                 "shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]",
               ].join(" ")}>
-              {/* 📌 이 div가 모달 포털 기준 컨테이너가 됨 */}
+              {/* 📌 모달 포털 기준 컨테이너 */}
               <div
                 id="memento-sim-root"
                 className="relative h-full w-full overflow-x-hidden overflow-y-auto">
