@@ -3,7 +3,7 @@ import backIcon from "@assets/icons/icon-back.png";
 import loginIcon from "@assets/icons/icon-login.svg";
 import homeIcon from "@assets/icons/icon-move-home.svg";
 import { useAuth } from "@entities/auth";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface CommonHeaderProps {
