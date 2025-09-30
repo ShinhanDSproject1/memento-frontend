@@ -148,7 +148,7 @@ export default function BookingPage({ mentorId, defaultMonth = new Date() }: Boo
     !!selectedDate && !!selectedTime && !isLoadingTimes && !isLoadingDetail && !!title;
 
   return (
-    <div className="flex min-h-full w-full justify-center overflow-x-hidden bg-[#f5f6f8] font-sans antialiased">
+    <div className="flex h-[calc(100vh-48px)] w-full justify-center overflow-x-hidden bg-[#F7FAFF] font-sans antialiased">
       <section className="w-full overflow-x-hidden bg-white px-4 py-5 shadow">
         <h1 className="font-WooridaumB mt-6 mb-[50px] pl-2 text-[20px] font-bold">
           {title || "로딩 중..."}
