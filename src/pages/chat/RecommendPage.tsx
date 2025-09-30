@@ -24,7 +24,7 @@ const getMemberSeq = () => {
 // ✨ 중앙 로딩 컴포넌트 (모노톤 AI 아이콘 + 글자)
 function LoadingAI() {
   return (
-    <div className="flex h-[50vh] flex-col items-center justify-center gap-4">
+    <div className="flex h-[50vh] flex-col items-center justify-center gap-4 bg-[#F7FAFF]">
       {/* 빛망울 */}
       <motion.div
         className="relative flex items-center justify-center"
@@ -153,10 +153,10 @@ export default function RecommendPage() {
 
       {/* 컨테이너 */}
       <div
-        className="mx-auto grid max-w-[720px] grid-rows-[auto_1fr] px-4"
+        className="mx-auto flex max-w-[720px] flex-col px-4"
         style={{ height: "calc(100dvh - var(--app-header-h,56px))" } as React.CSSProperties}>
         {/* 헤더 */}
-        <div className="flex items-center justify-between py-4">
+        <div className="flex shrink-0 items-center justify-between py-3">
           <h1 className="text-lg font-semibold text-black">맞춤 추천</h1>
           <button
             onClick={() => navigate(-1)}
@@ -166,7 +166,7 @@ export default function RecommendPage() {
         </div>
 
         {/* 본문 */}
-        <div className="min-h-0 overflow-y-auto pb-[max(env(safe-area-inset-bottom),0px)]">
+        <div className="min-h-0 flex-1 overflow-y-auto pb-[max(env(safe-area-inset-bottom),0px)]">
           {/* 로딩: 중앙 모노 로더 */}
           {loading && <LoadingAI />}
 
@@ -197,9 +197,9 @@ export default function RecommendPage() {
                 href={`/menti/mentos-detail/${item.mentos_seq}`}
                 {...fadeIn}
                 transition={{ delay: idx * 0.12 }}
-                className="group mx-auto mb-6 block w-full max-w-[680px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                className="group mx-auto mb-4 block w-full max-w-[680px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                 {/* 이미지 */}
-                <div className="h-[180px] w-full overflow-hidden">
+                <div className="h-[155px] w-full overflow-hidden">
                   <img
                     src={item.mentos_image}
                     alt={item.mentos_title}
@@ -209,7 +209,7 @@ export default function RecommendPage() {
                 </div>
 
                 {/* 텍스트 */}
-                <div className="flex flex-col gap-1 px-3 py-3">
+                <div className="flex flex-col gap-1 px-3 py-2">
                   <h3 className="line-clamp-2 text-sm font-medium text-black">
                     {item.mentos_title}
                   </h3>
