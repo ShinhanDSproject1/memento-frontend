@@ -36,7 +36,7 @@ export function PrimaryActions({
             <button
               type="button"
               onClick={() => navigate("/mento/nearby")}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-300 bg-blue-50 px-5 py-3 text-[14px] font-medium text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-800">
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-3 font-medium text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-200 hover:text-blue-800">
               내 주변 멘토찾기
               <ArrowRight className="h-4 w-4" />
             </button>
@@ -46,7 +46,7 @@ export function PrimaryActions({
               <button
                 type="button"
                 onClick={() => navigate("/menti/myprofile")}
-                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-300 bg-blue-50 px-3 py-4 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-900 hover:shadow-md">
+                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-200 bg-blue-50 px-3 py-4 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-200 hover:text-blue-800 hover:shadow-md">
                 {/* ✅ png 아이콘 삽입 */}
                 <img
                   src="/src/shared/assets/icons/icon-myprofile.png" // 실제 프로젝트 아이콘 경로로 교체
@@ -58,7 +58,7 @@ export function PrimaryActions({
               <button
                 type="button"
                 onClick={() => navigate("/menti/mymentos")}
-                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-300 bg-blue-50 px-3 py-4 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-900 hover:shadow-md">
+                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-200 bg-blue-50 px-3 py-4 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-200 hover:text-blue-800 hover:shadow-md">
                 <img
                   src="/src/shared/assets/icons/icon-mymentoring.png" // 실제 프로젝트 아이콘 경로로 교체
                   alt="나의 정보관리"
@@ -70,7 +70,7 @@ export function PrimaryActions({
               <button
                 type="button"
                 onClick={() => navigate("/chat")}
-                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-300 bg-blue-50 px-3 py-4 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-200 hover:text-blue-900 hover:shadow-md">
+                className="flex flex-col items-center justify-center gap-1 rounded-3xl border border-blue-200 bg-blue-50 px-3 py-4 text-xs font-medium text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-200 hover:text-blue-800 hover:shadow-md">
                 <img
                   src="/src/shared/assets/icons/icon-chat.png" // 실제 프로젝트 아이콘 경로로 교체
                   alt="나의 정보관리"

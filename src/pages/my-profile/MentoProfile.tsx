@@ -177,7 +177,7 @@ export default function MentorProfile() {
       closeModal();
       clearAccessToken();
       clearUserSnapshot();
-      navigate("/login", { replace: true });
+      window.location.replace("/");
       return;
     }
     // profileUpdated, withdrawFailed
