@@ -125,7 +125,7 @@ export default function MentosForm({
             name="title"
             value={form.title}
             onChange={handleChange}
-            className="w-full rounded-lg border border-slate-200 px-2 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-[#2F6CFF] focus:shadow-[0_0_0_3px_rgba(47,108,255,0.15)]"
+            className="w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-[#2F6CFF] focus:shadow-[0_0_0_3px_rgba(47,108,255,0.15)]"
             required
           />
         </div>
@@ -143,7 +143,7 @@ export default function MentosForm({
                   // Changed
                   form.category === opt.value
                     ? "bg-[#1161FF] text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    : "bg-sky-100 text-black hover:bg-gray-200"
                 }`}>
                 {opt.label}
               </button>
@@ -155,7 +155,7 @@ export default function MentosForm({
         <div className="grid grid-cols-[56px_1fr] items-start gap-3">
           <label className="pl-2 leading-7 font-bold text-[#333]">내용</label>
         </div>
-        <div className="h-80 w-full overflow-hidden rounded-lg border border-[#e5e7ed]">
+        <div className="h-80 w-full overflow-hidden rounded-lg border border-[#e5e7ed] bg-white">
           <SimpleEditor
             value={form.content}
             onChange={(html) => setForm((prev) => ({ ...prev, content: html }))}

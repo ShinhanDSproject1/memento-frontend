@@ -78,15 +78,15 @@ export default function EditMentosPage() {
 
   const handleConfirmClose = () => {
     closeModal();
-    navigate("/mento/my-list");
+    window.location.replace("/mento/my-list");
   };
 
   if (fetching) return <div className="p-6">불러오는 중…</div>;
   if (!initialValues) return <div className="p-6 text-red-600">{errorMsg ?? "데이터 없음"}</div>;
 
   return (
-    <div className="flex min-h-full w-full justify-center bg-[#f5f6f8]">
-      <section className="w-full bg-white px-4 py-5 shadow">
+    <div className="flex h-[calc(100vh-140px)] w-full justify-center bg-[#F7FAFF]">
+      <section className="w-full bg-[#F7FAFF] px-4 py-5 shadow">
         <h1 className="font-WooridaumB mt-6 mb-9 pl-2 text-[20px] font-bold">멘토링 수정하기</h1>
 
         {/* 성공 모달 */}

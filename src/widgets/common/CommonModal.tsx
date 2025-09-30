@@ -80,7 +80,7 @@ export default function CommonModal<K extends ModalKey>({
             {(() => {
               const title = pickString(modalData, "title");
               return title ? (
-                <span className="px-4 pt-2 text-center text-[16px] font-bold whitespace-pre text-[#333]">
+                <span className="px-4 pt-2 text-center text-[16px] font-bold whitespace-pre-wrap text-[#333]">
                   {title}
                 </span>
               ) : null;
