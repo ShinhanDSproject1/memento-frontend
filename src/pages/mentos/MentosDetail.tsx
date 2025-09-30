@@ -17,6 +17,7 @@ import clockIcon from "@assets/icons/icon-clock.svg";
 import locationIcon from "@assets/icons/icon-location.svg";
 import starIcon from "@assets/icons/icon-star.svg";
 
+import { useLoginSheet } from "@/app/providers/LoginFormProvider";
 import DOMPurify from "dompurify";
 import { createPortal } from "react-dom";
 
@@ -71,6 +72,8 @@ export default function MentosDetail() {
   const normalized = normalizeRole((user as any)?.memberType ?? (user as any)?.role);
   const isMentor = (normalized ?? "guest") === "mentor";
   const isLoggedIn = !!user;
+
+  const { openLogin } = useLoginSheet();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -259,12 +262,21 @@ export default function MentosDetail() {
   }, [data?.mentosLocation]);
 
   /* 예약 버튼 */
-  const handleGoBooking = () => {
+
+  const handleGoBooking = (e?: React.MouseEvent) => {
     if (!id || !data) return;
-    if (isMentor) return; // 멘토는 예약 불가
+    if (isMentor) return;
     if (!isLoggedIn) {
-      setShowLoginForm(true);
-      setLoginError(null);
+      // ✅ 지금 보고있는 화면 하단(뷰포트)에서 열기
+      openLogin({
+        placement: "fixed", // 뷰포트 하단
+        root: document.body, // (생략 가능) 기본값으로 body 사용
+        onSuccess: () => {
+          navigate("/booking", {
+            state: { mentosSeq: Number(id), title: data.mentosTitle, price: data.mentosPrice },
+          });
+        },
+      });
       return;
     }
     navigate("/booking", {
@@ -452,7 +464,6 @@ export default function MentosDetail() {
         </div>
       )}
 
-      {/* ✅ 포털로 로그인 모달 (뷰포트 기준) */}
       {typeof document !== "undefined" &&
         createPortal(
           <LoginSheet
@@ -461,12 +472,10 @@ export default function MentosDetail() {
             onSubmit={handleLoginSubmit}
             error={loginError}
             loading={isLoggingIn}
-            placement="container"
-            className="z-[9999]"
+            placement="fixed" // ← 바닥에 고정되는 모드
+            className="z-[10000]" // ← 충분히 높은 z-index
           />,
-          (document.querySelector("[data-app-screen]") as HTMLElement) ??
-            (document.getElementById("memento-sim-root") as HTMLElement) ??
-            document.body,
+          document.body, // ← 컨테이너/시뮬레이터 말고 바디로!
         )}
     </main>
   );
