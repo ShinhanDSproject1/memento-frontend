@@ -189,7 +189,7 @@ export default function MentorSignup() {
   };
 
   return (
-    <main className="mx-auto h-[calc(100vh-50px)] w-full max-w-md flex-col px-5 py-7 sm:h-[calc(100vh-140px)]">
+    <main className="mx-auto h-[calc(100vh-48px)] w-full max-w-md flex-col px-5 py-7">
       {/* 로고 + 인사 */}
       <div className="mb-5 text-center">
         <div className="flex items-center justify-center">

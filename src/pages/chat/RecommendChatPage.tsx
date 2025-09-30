@@ -167,7 +167,7 @@ export default function RecommendChatPage() {
   };
 
   return (
-    <main className="relative h-[calc(100vh-50px)] w-full bg-[#F7FAFF] px-4 pt-5 sm:h-[calc(100vh-140px)]">
+    <main className="relative h-[calc(100vh-48px)] w-full bg-[#F7FAFF] px-4 pt-5">
       <section className="mx-auto flex h-[70vh] w-full max-w-md flex-col items-center justify-around gap-4">
         {/* ✅ HeroBubble에는 애니메이션된 텍스트를 표시 */}
         <HeroBubble text={displayedText} highlight={isLoggedIn ? memberName : undefined} />
