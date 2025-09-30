@@ -22,8 +22,8 @@ export default function SignupSelect({ onSelect }: SignupSelectProps) {
   };
 
   return (
-    <main className="font-WooridaumB mx-auto w-full max-w-md py-20 md:h-185">
-      <h1 className="mb-8 text-center text-2xl font-extrabold text-slate-900">
+    <main className="font-WooridaumB mx-auto h-[calc(100vh-50px)] w-full max-w-md py-20 sm:h-[calc(100vh-140px)]">
+      <h1 className="mb-8 text-center text-xl font-extrabold text-slate-900">
         가입하시려는 유형을 선택해주세요
       </h1>
 

@@ -65,7 +65,7 @@ export default function ChatListPage() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-140px)] w-full justify-center overflow-x-hidden bg-[#F7FAFF] antialiased">
+    <div className="flex h-[calc(100vh-50px)] w-full justify-center overflow-x-hidden bg-[#F7FAFF] antialiased sm:h-[calc(100vh-140px)]">
       <section className="w-full overflow-x-hidden bg-transparent px-4 py-5">
         <h1 className="font-WooridaumB mt-6 mb-6 pl-2 text-[20px]">채팅</h1>
 

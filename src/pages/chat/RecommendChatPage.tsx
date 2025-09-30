@@ -103,6 +103,7 @@ export default function RecommendChatPage() {
     setBubbleText("답변을 준비중이에요…");
 
     try {
+      setInput("");
       const res = await fetch(apiUrl("/ai/chatbot"), {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -126,18 +127,18 @@ export default function RecommendChatPage() {
   };
 
   return (
-    <main className="relative h-[calc(100vh-140px)] w-full bg-[#F7FAFF] px-4 pt-5">
+    <main className="relative h-[calc(100vh-50px)] w-full bg-[#F7FAFF] px-4 pt-5 sm:h-[calc(100vh-140px)]">
       <section className="mx-auto w-full max-w-lg">
         <CategoryButtonGroup />
       </section>
 
-      <section className="mx-auto flex h-[74vh] w-full max-w-md flex-col items-center justify-around gap-4">
+      <section className="mx-auto flex h-[50vh] w-full max-w-md flex-col items-center justify-around gap-4">
         {/* ✅ HeroBubble에는 애니메이션된 텍스트를 표시 */}
         <HeroBubble text={displayedText} highlight={isLoggedIn ? memberName : undefined} />
         <CharacterFigure glowed={isLoggedIn} />
 
-        <section className="mx-auto flex min-h-[140px] w-full max-w-md items-center justify-center">
-          <div className="w-full rounded-2xl bg-white/80 p-3 shadow ring-1 ring-black/5 backdrop-blur">
+        <section className="absolute bottom-0 w-full max-w-md">
+          <div className="w-full bg-white/80 p-4 shadow ring-1 ring-black/5 backdrop-blur">
             <div className="flex items-center gap-2">
               <input
                 value={input}

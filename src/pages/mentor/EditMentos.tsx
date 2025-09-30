@@ -85,7 +85,7 @@ export default function EditMentosPage() {
   if (!initialValues) return <div className="p-6 text-red-600">{errorMsg ?? "데이터 없음"}</div>;
 
   return (
-    <div className="flex h-[calc(100vh-140px)] w-full justify-center bg-[#F7FAFF]">
+    <div className="flex h-[calc(100vh-50px)] w-full justify-center bg-[#F7FAFF] sm:h-[calc(100vh-140px)]">
       <section className="w-full bg-[#F7FAFF] px-4 py-5 shadow">
         <h1 className="font-WooridaumB mt-6 mb-9 pl-2 text-[20px] font-bold">멘토링 수정하기</h1>
 
