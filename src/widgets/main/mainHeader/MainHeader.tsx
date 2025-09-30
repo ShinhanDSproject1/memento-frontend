@@ -21,11 +21,11 @@ export default function MainHeader({ onClickHome }: MainHeaderProps) {
       await logout();
       setLogoutOpen(true); // ← 모달 오픈
     } else {
-      navigate("/");
+      window.location.replace("/");
     }
   };
 
-  const goHome = onClickHome ?? (() => navigate("/"));
+  const goHome = onClickHome ?? (() => window.location.replace("/"));
 
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between bg-white px-4 py-3 sm:px-6 lg:px-8">
@@ -66,7 +66,7 @@ export default function MainHeader({ onClickHome }: MainHeaderProps) {
             className="absolute inset-0 bg-black/40"
             onClick={() => {
               setLogoutOpen(false);
-              navigate("/"); // 바깥 클릭 시에도 홈 이동
+              window.location.replace("/"); // 바깥 클릭 시에도 홈 이동
             }}
           />
           {/* content */}
@@ -79,7 +79,7 @@ export default function MainHeader({ onClickHome }: MainHeaderProps) {
                 className="rounded-lg bg-[#005EF9] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0C2D62]"
                 onClick={() => {
                   setLogoutOpen(false);
-                  navigate("/");
+                  window.location.replace("/");
                 }}>
                 확인
               </button>
