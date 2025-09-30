@@ -64,17 +64,10 @@ export default function ChatListPage() {
     [grouped],
   );
 
-  // ✅ role에 따른 배경 색상
-  const bgClass =
-    role === "menti"
-      ? "bg-gradient-to-b from-blue-50 to-blue-100"
-      : "bg-gradient-to-b from-green-50 to-green-100";
-
   return (
-    <div
-      className={`flex min-h-screen w-full justify-center overflow-x-hidden ${bgClass} antialiased`}>
+    <div className="flex h-[calc(100vh-140px)] w-full justify-center overflow-x-hidden bg-[#F7FAFF] antialiased">
       <section className="w-full overflow-x-hidden bg-transparent px-4 py-5">
-        <h1 className="font-WooridaumB mt-6 mb-15 pl-2 text-[20px]">채팅</h1>
+        <h1 className="font-WooridaumB mt-6 mb-6 pl-2 text-[20px]">채팅</h1>
 
         {rooms === null && !error && (
           <div className="font-WooridaumL px-3 py-6 text-sm text-slate-500">
@@ -89,12 +82,12 @@ export default function ChatListPage() {
         )}
 
         {rooms && rooms.length > 0 && (
-          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-3">
+          <div className="flex flex-col gap-6 overflow-y-auto px-3">
             {groupEntries.map(([title, items]) => (
               <section
                 key={title}
                 className="rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-sm">
-                <h3 className="font-WooridaumR mb-3 px-1 text-[18px] font-semibold text-gray-800">
+                <h3 className="font-WooridaumR mb-3 px-1 text-[16px] font-semibold text-gray-800">
                   {title}
                 </h3>
                 <ul className="space-y-3">

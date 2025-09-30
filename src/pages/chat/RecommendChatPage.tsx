@@ -60,7 +60,7 @@ export default function RecommendChatPage() {
     const ac = new AbortController();
     (async () => {
       try {
-        const url = apiUrl(`/ai/chatbot/?member_seq=${encodeURIComponent(memberUUID)}`);
+        const url = apiUrl(`/ai/chatbot/${encodeURIComponent(memberUUID)}`);
         const res = await fetch(url, {
           headers: { Accept: "application/json" },
           signal: ac.signal,
@@ -126,46 +126,46 @@ export default function RecommendChatPage() {
   };
 
   return (
-    <main className="relative h-screen w-full bg-gradient-to-b from-[#F7FAFF] to-[#c2d2f1] px-4 pt-5 md:h-190">
+    <main className="relative h-[calc(100vh-140px)] w-full bg-[#F7FAFF] px-4 pt-5">
       <section className="mx-auto w-full max-w-lg">
         <CategoryButtonGroup />
       </section>
 
-      <section className="mx-auto mt-10 flex w-full max-w-md flex-col items-center gap-4">
+      <section className="mx-auto flex h-[74vh] w-full max-w-md flex-col items-center justify-around gap-4">
         {/* ✅ HeroBubble에는 애니메이션된 텍스트를 표시 */}
         <HeroBubble text={displayedText} highlight={isLoggedIn ? memberName : undefined} />
         <CharacterFigure glowed={isLoggedIn} />
-      </section>
 
-      <section className="mx-auto mt-40 mb-3 w-full max-w-md md:mt-30">
-        <div className="rounded-2xl bg-white/80 p-3 shadow ring-1 ring-black/5 backdrop-blur">
-          <div className="flex items-center gap-2">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  send();
-                }
-              }}
-              placeholder="질문을 입력해주세요"
-              className="flex-1 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-sm text-slate-800 shadow-sm outline-none placeholder:text-slate-400 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/30"
-            />
-            <button
-              type="button"
-              onClick={send}
-              disabled={pending || !input.trim()}
-              className="inline-flex items-center gap-1 rounded-xl bg-[#2563EB] px-3 py-2 text-sm font-semibold text-white shadow hover:bg-[#1E4FD9] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400">
-              {pending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-              {pending ? " 전송중…" : " 보내기"}
-            </button>
+        <section className="mx-auto flex min-h-[140px] w-full max-w-md items-center justify-center">
+          <div className="w-full rounded-2xl bg-white/80 p-3 shadow ring-1 ring-black/5 backdrop-blur">
+            <div className="flex items-center gap-2">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    send();
+                  }
+                }}
+                placeholder="질문을 입력해주세요"
+                className="flex-1 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-sm text-slate-800 shadow-sm outline-none placeholder:text-slate-400 focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/30"
+              />
+              <button
+                type="button"
+                onClick={send}
+                disabled={pending || !input.trim()}
+                className="inline-flex items-center gap-1 rounded-xl bg-[#2563EB] px-3 py-2 text-sm font-semibold text-white shadow hover:bg-[#1E4FD9] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400">
+                {pending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+                {pending ? " 전송중…" : " 보내기"}
+              </button>
+            </div>
           </div>
-        </div>
+        </section>
       </section>
 
       <LoginSheet

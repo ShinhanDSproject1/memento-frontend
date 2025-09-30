@@ -188,11 +188,6 @@ export default function MentorSignup() {
     }
   };
 
-  const selectedDate: Date | null =
-    birth.y && birth.m && birth.d
-      ? new Date(Number(birth.y), Number(birth.m) - 1, Number(birth.d))
-      : null;
-
   return (
     <main className="mx-auto w-full max-w-md px-5 py-8">
       {/* 로고 + 인사 */}
@@ -311,7 +306,7 @@ export default function MentorSignup() {
               <button
                 type="button"
                 onClick={() => setIsCalOpen((v) => !v)}
-                className="flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#1161FF] shadow-sm hover:bg-slate-50">
+                className="flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold whitespace-nowrap text-[#1161FF] shadow-sm hover:bg-slate-50">
                 📅 선택
               </button>
 
@@ -342,7 +337,7 @@ export default function MentorSignup() {
                     openToDate={
                       birth.y && birth.m
                         ? new Date(Number(birth.y), Number(birth.m) - 1, 1)
-                        : new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+                        : new Date(new Date().getFullYear() - 20, 0, 1)
                     }
                   />
                 </div>

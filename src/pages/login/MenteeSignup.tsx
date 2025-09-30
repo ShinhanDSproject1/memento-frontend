@@ -196,7 +196,7 @@ export default function MenteeSignup() {
               <button
                 type="button"
                 onClick={() => setIsCalOpen((v) => !v)}
-                className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#1161FF] shadow-sm hover:bg-slate-50"
+                className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold whitespace-nowrap text-[#1161FF] shadow-sm hover:bg-slate-50"
                 aria-label="생년월일 선택">
                 📅 선택
               </button>
@@ -230,7 +230,7 @@ export default function MenteeSignup() {
                     openToDate={
                       birth.y && birth.m
                         ? new Date(Number(birth.y), Number(birth.m) - 1, 1)
-                        : new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+                        : new Date(new Date().getFullYear() - 20, 0, 1)
                     }
                   />
                 </div>

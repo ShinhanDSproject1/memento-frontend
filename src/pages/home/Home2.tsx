@@ -58,10 +58,6 @@ export default function HomePage({
             ]
           : [];
 
-  // ✅ 배경
-  const bgClass =
-    normalized === "mentor" ? "bg-gradient-to-b bg-[#F7FAFF]" : "bg-gradient-to-b bg-[#F7FAFF] ";
-
   // ✅ 로컬 상태 (로그인 모달)
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -92,7 +88,7 @@ export default function HomePage({
 
   return (
     <main
-      className={`relative grid h-screen w-full grid-rows-[auto_1fr_auto] ${bgClass} px-4 md:h-183`}
+      className="relative grid h-[calc(100vh-140px)] w-full grid-rows-[auto_1fr_auto] bg-[#F7FAFF] px-4"
       data-app-screen>
       {/* 상단 카테고리 */}
       <section className="mx-auto mt-5 w-full max-w-lg">
@@ -100,7 +96,7 @@ export default function HomePage({
       </section>
 
       {/* 중앙 히어로 */}
-      <section className="mx-auto mt-2 flex w-full max-w-md flex-col items-center justify-center">
+      <section className="mx-auto flex w-full max-w-md flex-col items-center justify-around">
         <HeroBubble
           text={`안녕하세요! 저는 메멘토의 AI 도우미 ‘${aiHelperName}’예요.`}
           highlight={memberName}

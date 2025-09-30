@@ -172,7 +172,7 @@ export default function MentoIntroduce() {
   if (isLoading || isFetching) {
     return (
       <div className="p-6 text-center">
-        <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+        <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-[#005EF9] border-t-transparent" />
         <p>프로필 불러오는 중…</p>
       </div>
     );
@@ -184,7 +184,7 @@ export default function MentoIntroduce() {
         {(error as Error)?.message ?? "프로필 조회 실패"}
         <div className="mt-3 flex justify-center">
           <button
-            className="rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700"
+            className="rounded-lg bg-[#005EF9] px-4 py-2 text-white hover:bg-[#005EF9]"
             onClick={() => refetch()}
             type="button">
             다시 시도
@@ -195,18 +195,18 @@ export default function MentoIntroduce() {
   }
 
   return (
-    <main className="min-h-dvh bg-gradient-to-b from-white to-emerald-200">
-      <div className="mx-auto w-full max-w-screen-sm space-y-10 px-4 pt-8 pb-10 sm:max-w-md md:max-w-lg">
+    <main className="min-h-dvh">
+      <div className="mx-auto w-full max-w-screen-sm space-y-11 px-4 pt-8 pb-10 sm:max-w-md md:max-w-lg">
         <h1 className="font-WooridaumB text-center">멘티들이 확인할 정보를 입력해주세요</h1>
 
         {/* 프로필 이미지 */}
         <section className="flex flex-col items-center gap-2">
           <label htmlFor="profile-upload" className="group cursor-pointer">
-            <div className="relative inline-block rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 p-[3px]">
+            <div className="relative inline-block rounded-full p-[3px]">
               <img
                 src={profileImage}
                 alt="프로필 이미지"
-                className="h-32 w-32 rounded-full bg-white object-cover shadow-lg shadow-emerald-100 transition-transform duration-200 group-hover:scale-105"
+                className="h-32 w-32 rounded-full bg-white object-cover shadow-lg shadow-blue-100 transition-transform duration-200 group-hover:scale-105"
               />
               <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
                 <span className="text-sm font-semibold text-white">변경</span>
@@ -265,7 +265,7 @@ export default function MentoIntroduce() {
         {/* 저장 */}
         <footer className="mt-6 flex w-full justify-center">
           <button
-            className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700"
+            className="w-full rounded-lg bg-[#005EF9] px-4 py-3 font-semibold text-white hover:bg-[#005EF9]"
             onClick={handleSubmit}
             type="button">
             등록

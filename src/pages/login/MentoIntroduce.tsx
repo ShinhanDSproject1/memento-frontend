@@ -108,7 +108,7 @@ export default function MentoIntroduce() {
         {/* 프로필 이미지 */}
         <section className="flex flex-col items-center gap-2">
           <label htmlFor="profile-upload" className="group cursor-pointer">
-            <div className="relative inline-block rounded-full bg-gradient-to-r from-blue-400 to-green-400 p-[3px]">
+            <div className="relative inline-block rounded-full p-[3px]">
               <img
                 src={profileImage}
                 alt="프로필 이미지"

@@ -7,17 +7,18 @@ type RecommendationItem = {
   mentos_seq: number;
   mentos_image: string;
   mentos_title: string;
+  region: string;
   price: number;
   mento_profile_image: string;
 };
 
-type NavState = { member_seq?: number; queries?: string[] };
+type NavState = { member_seq?: string; queries?: string[] };
 
 const RECO_ENDPOINT = "/api/ai/recommend"; // Vite proxy 경로
 
 const getMemberSeq = () => {
   const v = localStorage.getItem("member_seq");
-  return v ? Number(v) : 1;
+  return v;
 };
 
 // ✨ 중앙 로딩 컴포넌트 (모노톤 AI 아이콘 + 글자)
@@ -215,7 +216,7 @@ export default function RecommendPage() {
 
                   {/* 하단: 위치 + (가격 + 멘토 아바타) */}
                   <div className="flex items-center justify-between text-sm text-slate-600">
-                    <span className="truncate">동교동</span>
+                    <span className="truncate">{item.region}</span>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-blue-700">
                         ₩{item.price.toLocaleString()}
